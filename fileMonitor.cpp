@@ -82,4 +82,4 @@ private:
     std::vector<std::shared_ptr<monitorInfo>> m_monitor_list;
 };
 
-static fileMonitor mn;
+//static fileMonitor mn;
