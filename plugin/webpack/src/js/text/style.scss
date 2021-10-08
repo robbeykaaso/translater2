@@ -1,0 +1,7 @@
+@import "~reajs/rea.scss";
+
+html{
+    body{
+        @include fullfill;
+    }
+}

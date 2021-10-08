@@ -1,0 +1,13 @@
+@import "~reajs/rea.scss";
+
+html{
+    body{
+        @include fullfill;
+        .layout-scroll{
+            height: 100%;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+    }
+}
+

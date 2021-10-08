@@ -1,0 +1,17 @@
+{
+    "c++": "server",
+    "server": {
+        "ip": "127.0.0.1",
+        "port": 8081,
+        "connects": [{
+            "local": "server",
+            "remote": "c++",
+            "remoteLocal": "c++_server"
+        },
+        {
+            "local": "server",
+            "remote": "qml",
+            "remotelocal": "qml_server"
+        }]
+    }
+}

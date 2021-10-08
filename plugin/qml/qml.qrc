@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/">
+        <file>res/splash.png</file>
+        <file>service/Interface.qml</file>
+        <file>service/Splash.qml</file>
+        <file>gui/html_main.qml</file>
+        <file>service/ReaGrid.qml</file>
+        <file>gui/GridItem.qml</file>
+        <file>service/Service.qml</file>
+        <file>gui/GridsModel.qml</file>
+        <file>gui/Web.qml</file>
+        <file>gui/service/image/QSG.qml</file>
+        <file>gui/service/text/TXT.qml</file>
+        <file>gui/service/resource/Resource.qml</file>
+    </qresource>
+</RCC>

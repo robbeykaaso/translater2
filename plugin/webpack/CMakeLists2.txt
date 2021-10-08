@@ -1,0 +1,14 @@
+set(USEWEB ON)
+
+if (${USEWEB} STREQUAL "ON")
+    list(APPEND gui_source
+        "${CMAKE_SOURCE_DIR}/plugin/webpack/public/assets"
+        "${CMAKE_SOURCE_DIR}/plugin/webpack/public/html"
+        "${CMAKE_SOURCE_DIR}/plugin/webpack/public/js"
+        )
+    list(APPEND gui_target
+        "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/../assets"
+        "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/../html"
+        "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/../js"
+        )
+endif()
