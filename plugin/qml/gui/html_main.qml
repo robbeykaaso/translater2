@@ -28,7 +28,7 @@ ApplicationWindow {
             }
             MenuItem{
                 text: Pipelines().tr("layout")
-                onTriggered: Pipelines().run("enableLayout", 0)
+                onTriggered: Pipelines().run("enableLayout", "")
             }
         }
         Menu{
@@ -41,12 +41,20 @@ ApplicationWindow {
             anchors.fill: parent
             ReaGrid{
                 id: container
+                property bool layout_mode: true
+                property var ide_type
                 width: parent.width
                 height: parent.height - 30
                 com: GridItem{
+                        layout_mode: container.layout_mode
+                        init_edit_mode: container.ide_type[index.toString()] || "auto"
                         anchors.fill: parent
                     }
                 Component.onCompleted: {
+                    Pipelines().find("enableLayout").nextF(function(aInput){
+                        ide_type = aInput.scope().data("ide_type")
+                        layout_mode = aInput.data()
+                    })
                    // Pipelines().run("updateLayout", dt)
                 }
             }
@@ -68,6 +76,9 @@ ApplicationWindow {
 
     }
     File{
+
+    }
+    PWindow{
 
     }
     Service{

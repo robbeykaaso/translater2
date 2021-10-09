@@ -64,9 +64,5 @@ Item{
             type: "Delegate",
             delegate: "c++_messagePoped",
             external: "c++"})
-
-        Pipelines().add(function(aInput){
-            aInput.out()
-        }, {name: "enableLayout"})
     }
 }

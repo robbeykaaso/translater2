@@ -474,9 +474,10 @@ rea.pipelines("c++").init(function(){
             //if (tree_dt.length)
             refreshTree(tree_dt) 
             if (byusr)
-            rea.pipelines().run("storageOpened", {mode: src_mode,
-                                                    root: mdl.id,
-                                                    config: mdl.config})
+            rea.pipelines().run("storageOpened", {tag: rea.env().tag,
+                                                  mode: src_mode,
+                                                  root: mdl.id,
+                                                  config: mdl.config})
         }
     }, {name: "openFolder_" + rea.env().tag})
 })
@@ -532,9 +533,10 @@ rea.pipelines("c++").init(function(){
         tree_dt.push(prepareEntry((mdl.id == "" ? "" : mdl.id + "/") + dt[i], dt[i]))
     refreshTree(tree_dt)
     if (aInput.data() == "")
-        rea.pipelines().run("storageOpened", {mode: src_mode,
-                                            root: mdl.id,
-                                            config: mdl.config})
+        rea.pipelines().run("storageOpened", {tag: rea.env().tag,
+                                              mode: src_mode,
+                                              root: mdl.id,
+                                              config: mdl.config})
     }, {name: "openAWS_" + rea.env().tag})
 })
 
@@ -565,3 +567,9 @@ rea.pipelines().add(function(aInput){
     }
   }
 }, {name: "workFileSaved"})
+
+window.onload = e => {
+  rea.pipelines("qml").init(function(){
+    rea.pipelines().run("reaResourceLoaded", rea.env().tag)
+  })
+}

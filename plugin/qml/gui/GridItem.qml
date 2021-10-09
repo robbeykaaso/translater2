@@ -6,7 +6,7 @@ Rectangle{
     property string name
     property int index
 
-    //property alias mode: md.currentText
+    property string init_edit_mode: "auto"
     property var grids: parent.parent
     property bool layout_mode: true
 
@@ -140,14 +140,16 @@ Rectangle{
         property string lasttype: ""
         property var items: ({})
         visible: !layout_mode
-        function switchView(aType){
+        function switchView(aType, aModifyModel = true){
             if (lasttype == ""){
-                Pipelines().run("ideVisibleChanged", {visible: items[aType].name})
+                if (aModifyModel)
+                    Pipelines().run("ideVisibleChanged", {index: index, visible: aType})
                 push(items[aType])
             }else if (lasttype !== aType){
                 if (items[lasttype].beforeDestroy)
                     items[lasttype].beforeDestroy()
-                Pipelines().run("ideVisibleChanged", {visible: items[aType].name, invisible: items[lasttype].name})
+                if (aModifyModel)
+                    Pipelines().run("ideVisibleChanged", {index: index, visible: aType, invisible: lasttype})
                 replace(items[aType])
             }
             lasttype = aType
@@ -170,6 +172,10 @@ Rectangle{
             }, {name: name + "_handle_created"})
 
             Pipelines().run("create_handler", "", "", {name: name, width: root.width, height: root.height})
+            if (init_edit_mode && init_edit_mode != "auto"){
+                md.currentIndex = md.model.indexOf(init_edit_mode)
+                stk_vw.switchView(init_edit_mode, false)
+            }
         }
     }
 
@@ -177,11 +183,5 @@ Rectangle{
         if (!visible && grids && grids.cur === index){
             grids.cur = - 1
         }
-    }
-
-    Component.onCompleted: {
-        Pipelines().find("enableLayout").nextF(function(aInput){
-            layout_mode = !layout_mode
-        })
     }
 }
