@@ -10,6 +10,7 @@ WebEngineView {
         border.color: "black"
     }
     property int cur
+    property int cur_edit
 
     z: - 1
     /*Rectangle{
@@ -20,6 +21,14 @@ WebEngineView {
         anchors.bottom: parent.bottom
         z: 1
     }*/
+
+    function getGridItem(aIndex){
+        if (aIndex >= 0 && aIndex < children.length)
+            return children[aIndex].children[0]
+        else
+            return null
+    }
+
     Repeater{
         anchors.fill: parent
         z: 1

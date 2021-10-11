@@ -6,6 +6,7 @@ Rectangle{
     property string name
     property int index
 
+    property alias mode: md.currentText
     property string init_edit_mode: "auto"
     property var grids: parent.parent
     property bool layout_mode: true
@@ -16,22 +17,25 @@ Rectangle{
     width: parent.width / parent.columns
     height: parent.height / parent.rows
     color: "transparent"
-    border.color: (grids && grids.cur === index) ? "red" : "pink"
+    border.color: (grids && grids.cur_edit === index) ? "red" : "pink"
 
     MouseArea{
         enabled: !layout_mode
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        hoverEnabled: true
+       // acceptedButtons: Qt.LeftButton | Qt.RightButton
         //hoverEnabled: true //will lead to wrong cursor info to other controls
         anchors.fill: parent
         propagateComposedEvents: true
         z: (grids && grids.cur === index) ? - 1 : 2
-        onPressed: {
+        onEntered: {
             grids.cur = index
+            if (stk_vw.lasttype !== "resource"){
+                grids.cur_edit = index
+            }
         }
     }
 
     function openCurrent(aScope){
-        grids.cur = index
         Pipelines().run("openWorkFile", detail, "", aScope ? aScope.cache("root", rt).cache("config", stg_config) : {root: rt, config: stg_config})
     }
 
@@ -82,6 +86,7 @@ Rectangle{
     }
 
     ComboBox{
+        property bool isInit: true
         visible: !layout_mode
         id: md
         property var iniModel: ["auto"]
@@ -124,15 +129,30 @@ Rectangle{
         }
         onCurrentTextChanged: {
             if (stk_vw.items){
-                if (detail !== "")
+                if (detail !== "" && currentText !== "resource")
                     openCurrent()
-                else if (currentText != "auto"){
-                    grids.cur = index
-                    stk_vw.switchView(currentText)
-                    //Pipelines().run("js_getStorageInfo", ".tr_" + currentText, "openDefaultFile")
+                else{
+                    stk_vw.switchView(currentText, !isInit)
+                    isInit = false
                 }
+                    //Pipelines().run("js_getStorageInfo", ".tr_" + currentText, "openDefaultFile")
             }
         }
+    }
+
+    Component.onCompleted: {
+        Pipelines().find("qml_modelOpened").nextF(function(aInput){
+            if (aInput.scope().data("index") === (index * 1.0)){
+                do{
+                    var dt = aInput.data()
+                    stk_vw.switchView(aInput.scope().data("type"))
+                    if (dt === "")
+                        break
+                    //var cfg = aInput.scope().data("config")
+                    aInput.outs(dt, "recordFileModified")
+                }while(0)
+            }
+        }, {name: name + "_modelOpened"})
     }
 
     StackView{
@@ -144,13 +164,17 @@ Rectangle{
             if (lasttype == ""){
                 if (aModifyModel)
                     Pipelines().run("ideVisibleChanged", {index: index, visible: aType})
-                push(items[aType])
+                if (items[aType])
+                    push(items[aType])
             }else if (lasttype !== aType){
-                if (items[lasttype].beforeDestroy)
+                if (items[lasttype] && items[lasttype].beforeDestroy)
                     items[lasttype].beforeDestroy()
                 if (aModifyModel)
                     Pipelines().run("ideVisibleChanged", {index: index, visible: aType, invisible: lasttype})
-                replace(items[aType])
+                if (items[aType])
+                    replace(items[aType])
+                else
+                    clear()
             }
             lasttype = aType
         }
@@ -172,16 +196,19 @@ Rectangle{
             }, {name: name + "_handle_created"})
 
             Pipelines().run("create_handler", "", "", {name: name, width: root.width, height: root.height})
-            if (init_edit_mode && init_edit_mode != "auto"){
+            if (init_edit_mode && init_edit_mode !== "auto"){
+                md.isInit = true
                 md.currentIndex = md.model.indexOf(init_edit_mode)
-                stk_vw.switchView(init_edit_mode, false)
             }
         }
     }
 
     onVisibleChanged: {
-        if (!visible && grids && grids.cur === index){
-            grids.cur = - 1
+        if (!visible && grids){
+            if (grids.cur === index)
+                grids.cur = - 1
+            if (grids.cur_edit === index)
+                grids.cur_edit = - 1
         }
     }
 }

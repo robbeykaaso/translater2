@@ -42,7 +42,7 @@ ApplicationWindow {
             ReaGrid{
                 id: container
                 property bool layout_mode: true
-                property var ide_type
+                property var ide_type: ({})
                 width: parent.width
                 height: parent.height - 30
                 com: GridItem{
@@ -52,10 +52,25 @@ ApplicationWindow {
                     }
                 Component.onCompleted: {
                     Pipelines().find("enableLayout").nextF(function(aInput){
-                        ide_type = aInput.scope().data("ide_type")
+                        ide_type = aInput.scope().data("ide_type") || {}
                         layout_mode = aInput.data()
                     })
-                   // Pipelines().run("updateLayout", dt)
+                    Pipelines().add(function(aInput){
+                        aInput.out()
+                    }, {name: "js_openWorkFile"}).nextF(function(aInput){
+                        var itm = getGridItem(cur_edit)
+                        if (itm && itm.mode !== "resource"){
+                            itm.detail = aInput.data()
+                            itm.rt = aInput.scope().data("root")
+                            itm.stg_config = aInput.scope().data("config")
+                            aInput.scope().cache("index", cur_edit)
+
+                            if (itm.mode === "auto")
+                                aInput.out(aInput.data().split(".").pop().toLowerCase())
+                            else
+                                aInput.out(itm.mode)
+                        }
+                    }, "", {name: "openWorkFile", type: "Partial", external: "c++"})
                 }
             }
             Status{

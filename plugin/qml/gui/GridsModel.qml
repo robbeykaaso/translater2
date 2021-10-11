@@ -125,8 +125,11 @@ Item{
             if (aInput.data() === ""){
                 layout_mode = !layout_mode
                 Pipelines().run("saveGridModel", "")
-            }else
+            }else{
                 layout_mode = aInput.data()
+                ide_type = aInput.scope().data("ide_type") || {}
+                ide_status = aInput.scope().data("ide_status") || {}
+            }
             aInput.setData(layout_mode).out()
         }, {name: "enableLayout"})
     }

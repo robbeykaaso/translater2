@@ -256,8 +256,4 @@ static rea::regPip<QQmlApplicationEngine*> test_qsg([](rea::stream<QQmlApplicati
     rea::pipeline::instance()->add<QString>(only_out,
         rea::Json("name", "evalPyScript0"))
             ->next("evalPyScript");
-    rea::pipeline::instance()->find("openWorkFile0")
-            ->nextP(rea::pipeline::instance()->add<QString, rea::pipePartial>([](rea::stream<QString>* aInput){
-                        aInput->out();
-                    }, rea::Json("name", "openWorkFile")));
 }, QJsonObject(), "initRea");
