@@ -7,5 +7,12 @@ if (${USEHANDLER} STREQUAL "ON")
         "plugin/handler/qsgHandler.cpp"
         "plugin/handler/textHandler.cpp"
         "plugin/handler/resourceHandler.cpp"
+        "plugin/handler/3DHandler.cpp"
+        "plugin/handler/customCameraController.h"
+        "plugin/handler/customCameraController.cpp"
+        "plugin/handler/mideaHandler.cpp"
+        "plugin/handler/echartHandler.cpp"
+        "plugin/handler/operatorGraphHandler.cpp"
+        "plugin/handler/htmlHandler.cpp"
         )
 endif()

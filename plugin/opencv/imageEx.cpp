@@ -30,9 +30,12 @@ private:
         if (!m_node->parent())
             return;
 
+        QTransform org2ocs;
+        auto rg = getRange(QImage());
+        org2ocs.scale(rg.width() / m_image.cols, rg.height() / m_image.rows);
         auto wcs2scs = reinterpret_cast<QSGTransformNode*>(m_node->nextSibling())->matrix(),
-                ocs2scs = wcs2scs * m_ocs2wcs,
-                scs2ocs = ocs2scs.inverted();
+                org2scs = wcs2scs * m_ocs2wcs * org2ocs,
+                scs2ocs = org2scs.inverted();
         auto bnd_ocs = rea::calcBoundBox(rea::pointList({scs2ocs.map(QPointF(0, 0)),
                                                          scs2ocs.map(QPointF(m_window->width() - 1, 0)),
                                                          scs2ocs.map(QPointF(m_window->width() - 1, m_window->height() - 1)),
@@ -42,15 +45,15 @@ private:
         do{
             if (ocs_rb.x() > ocs_lt.x() && ocs_rb.y() > ocs_lt.y()){
                 auto cliped = m_image(cv::Rect(ocs_lt.x(), ocs_lt.y(), ocs_rb.x() - ocs_lt.x() + 1, ocs_rb.y() - ocs_lt.y() + 1));
-                auto bnd_scs = rea::calcBoundBox(rea::pointList({ocs2scs.map(ocs_lt),
-                                                                 ocs2scs.map(QPointF(ocs_lt.x(), ocs_rb.y())),
-                                                                 ocs2scs.map(QPointF(ocs_rb.x(), ocs_lt.y())),
-                                                                 ocs2scs.map(ocs_rb)}));
+                auto bnd_scs = rea::calcBoundBox(rea::pointList({org2scs.map(ocs_lt),
+                                                                 org2scs.map(QPointF(ocs_lt.x(), ocs_rb.y())),
+                                                                 org2scs.map(QPointF(ocs_rb.x(), ocs_lt.y())),
+                                                                 org2scs.map(ocs_rb)}));
                 auto scs_lt = QPointF(std::max(0.0, std::round(bnd_scs.left())), std::max(0.0, std::round(bnd_scs.top()))),
                         scs_rb = QPointF(std::min(m_window->width() - 1, std::round(bnd_scs.right())), std::min(m_window->height() - 1, std::round(bnd_scs.bottom())));
-                ocs2scs.translate(ocs_lt.x(), ocs_lt.y());
+                org2scs.translate(ocs_lt.x(), ocs_lt.y());
                 cv::Mat af(2, 3, CV_32FC1);
-                auto src = ocs2scs.data();
+                auto src = org2scs.data();
                 af.at<float>(0, 0) = src[0];
                 af.at<float>(0, 1) = src[4];
                 af.at<float>(0, 2) = src[12];

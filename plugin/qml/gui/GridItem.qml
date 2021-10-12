@@ -35,8 +35,8 @@ Rectangle{
         }
     }
 
-    function openCurrent(aScope){
-        Pipelines().run("js_openWorkFile", detail, "", aScope ? aScope.cache("root", rt).cache("config", stg_config) : {root: rt, config: stg_config})
+    function openCurrent(){
+        Pipelines().run("openWorkFile", detail, "", {root: rt, config: stg_config, index: index})
     }
 
     Rectangle{

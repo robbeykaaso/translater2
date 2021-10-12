@@ -33,9 +33,8 @@ public:
              }}
         };
 
-        rea::pipeline::instance()->find("c++_region_edt_viewCountUpdated")->nextF<QJsonObject>([this](rea::stream<QJsonObject>* aInput){
-            auto dt = aInput->data().value("layout").toArray();
-            m_sum = dt[0].toInt() * dt[1].toInt();
+        rea::pipeline::instance()->find("reagridCountChanged")->nextF<double>([this](rea::stream<double>* aInput){
+            m_sum = std::max(int(aInput->data()), m_sum);
         });
 
         rea::pipeline::instance()->add<QString>([this](rea::stream<QString>* aInput){

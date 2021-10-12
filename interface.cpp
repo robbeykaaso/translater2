@@ -116,6 +116,7 @@ static rea::regPip<QQmlApplicationEngine*> test_qsg([](rea::stream<QQmlApplicati
             rea::pipeline::instance(pip);
         }
         sum = cnt;
+        aInput->out();
     }, rea::Json("name", "reagridCountChanged"));
     rea::pipeline::instance()->add<bool>([](rea::stream<bool>* aInput){
         aInput->outsB(aInput->data(), "doCommand", aInput->tag())

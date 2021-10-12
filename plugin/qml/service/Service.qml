@@ -17,7 +17,14 @@ Item{
         if (fls)
             for (var j in fls){
                 var coms = Pipelines().input("gui/service/" + fls[j], "", null, true).asyncCall("qml_listFiles").scope().data("data")
-                handlers[fls[j]] = coms.length ? Qt.createComponent("../gui/service/" + fls[j] + "/" + coms[0]) : null
+                var com = null
+                for (var k in coms)
+                    if (coms[k].endsWith(".qml")){
+                        com = Qt.createComponent("../gui/service/" + fls[j] + "/" + coms[k])
+                        break
+                    }
+
+                handlers[fls[j]] = com
             }
         for (var i in handlers){
             provideHandlerGUI(i, handlers[i])
