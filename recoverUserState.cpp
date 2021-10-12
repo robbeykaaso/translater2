@@ -35,7 +35,7 @@ public:
 
             auto dt = aInput->data();
             auto idx = dt.split("_")[0].split("reagrid")[1];
-            if (tp.value(idx) == "resource"){
+            if (tp.value(idx) == "resource__"){
                 auto sts = layout_cfg.value("ide_status").toObject();
                 auto stg = sts.value(idx).toObject();
                 if (stg.value("mode") == "file_sys")

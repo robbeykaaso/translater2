@@ -29,14 +29,14 @@ Rectangle{
         z: (grids && grids.cur === index) ? - 1 : 2
         onEntered: {
             grids.cur = index
-            if (stk_vw.lasttype !== "resource"){
+            if (!stk_vw.lasttype.endsWith("__")){
                 grids.cur_edit = index
             }
         }
     }
 
     function openCurrent(aScope){
-        Pipelines().run("openWorkFile", detail, "", aScope ? aScope.cache("root", rt).cache("config", stg_config) : {root: rt, config: stg_config})
+        Pipelines().run("js_openWorkFile", detail, "", aScope ? aScope.cache("root", rt).cache("config", stg_config) : {root: rt, config: stg_config})
     }
 
     Rectangle{
@@ -129,7 +129,7 @@ Rectangle{
         }
         onCurrentTextChanged: {
             if (stk_vw.items){
-                if (detail !== "" && currentText !== "resource")
+                if (detail !== "" && !currentText.endsWith("__"))
                     openCurrent()
                 else{
                     stk_vw.switchView(currentText, !isInit)

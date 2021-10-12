@@ -11,5 +11,5 @@ public:
 
 static rea::regPip<QString> create_resource_handler([](rea::stream<QString>* aInput){
     static resourceHandler res_hdl;
-    aInput->outs(aInput->data(), "create_resource_handler");
+    aInput->outs(aInput->data(), "create_resource___handler");
 }, QJsonObject(), "create_handler");

@@ -11,6 +11,6 @@
         <file>gui/Web.qml</file>
         <file>gui/service/image/QSG.qml</file>
         <file>gui/service/text/TXT.qml</file>
-        <file>gui/service/resource/Resource.qml</file>
+        <file>gui/service/resource__/Resource.qml</file>
     </qresource>
 </RCC>

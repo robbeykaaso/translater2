@@ -57,7 +57,7 @@ public:
                         if (i->saved)
                             i->saved = false;
                         else{
-                            aInput->outs<QString>(i->path, "openWorkFile0", QFileInfo(i->path).suffix())
+                            aInput->outs<QString>(i->path, "openWorkFile", QFileInfo(i->path).suffix())
                                     ->scope(true)
                                     ->cache<double>("index", i->index)
                                     ->cache("root", i->root)

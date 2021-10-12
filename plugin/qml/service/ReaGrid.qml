@@ -23,7 +23,7 @@ WebEngineView {
     }*/
 
     function getGridItem(aIndex){
-        if (aIndex >= 0 && aIndex < children.length)
+        if (aIndex >= 0 && aIndex < children.length && children[aIndex].visible)
             return children[aIndex].children[0]
         else
             return null
