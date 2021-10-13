@@ -7,9 +7,10 @@ public:
         m_sets = std::make_shared<QSettings>("dpst", "tr");
 
         rea::pipeline::instance()->find("saveGridModel")->nextF<QJsonObject>([this](rea::stream<QJsonObject>* aInput){
-            if (m_recovering)
+            if (m_recovering){
+                std::cout << "recover layout finished" << std::endl;
                 m_recovering = false;
-            else{
+            }else{
                 //qDebug() << aInput->data();
                 m_sets->setValue("layout", aInput->data());
             }
@@ -19,14 +20,13 @@ public:
             auto layout_cfg = m_sets->value("layout").toJsonObject();
             //qDebug() << layout_cfg;
             auto layout = layout_cfg.value("layout").toArray();
-            if (layout.empty())
+            if (layout.empty()){
                 layout.push_back(rea::Json("i", "0", "x", 0, "y", 0, "w", 1, "h", 2, "dely", 0));
+                layout_cfg.insert("layout", layout);
+            }
+            std::cout << "recover layout start" << std::endl;
             m_recovering = true;
-            aInput->outs(layout, "loadView");
-            if (layout_cfg.contains("layout_mode"))
-                aInput->outs(layout_cfg.value("layout_mode").toBool(), "enableLayout")->scope(true)
-                        ->cache("ide_type", layout_cfg.value("ide_type").toObject())
-                        ->cache("ide_status", layout_cfg.value("ide_status").toObject());
+            aInput->outs(layout_cfg, "loadView");
         }, rea::Json("name", "reaGridLoaded"));
 
         rea::pipeline::instance()->add<QString>([this](rea::stream<QString>* aInput){

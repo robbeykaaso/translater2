@@ -46,25 +46,23 @@ ApplicationWindow {
         }
     }
 
+    GridsModel{
+        id: grids_model
+    }
+
     contentData:
         Column{
             anchors.fill: parent
             ReaGrid{
                 id: container
-                property bool layout_mode: true
-                property var ide_type: ({})
                 width: parent.width
                 height: parent.height - 30
                 com: GridItem{
-                        layout_mode: container.layout_mode
-                        init_edit_mode: container.ide_type[index.toString()] || "auto"
+                        layout_mode: grids_model.layout_mode
+                        init_edit_mode: grids_model.ide_type[index.toString()] || "auto"
                         anchors.fill: parent
                     }
                 Component.onCompleted: {
-                    Pipelines().find("enableLayout").nextF(function(aInput){
-                        ide_type = aInput.scope().data("ide_type") || {}
-                        layout_mode = aInput.data()
-                    })
                     Pipelines().add(function(aInput){
                         aInput.scope().cache("index", cur_edit)
                         aInput.out()
@@ -130,10 +128,6 @@ ApplicationWindow {
 
     }
     Interface{
-
-    }
-
-    GridsModel{
 
     }
 

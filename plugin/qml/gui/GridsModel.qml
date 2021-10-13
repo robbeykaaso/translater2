@@ -54,10 +54,10 @@ Item{
         }, {name: "testUpdateLayout"})*/
 
         Pipelines().add(function(aInput){
-            var lyot = aInput.data()
+            var cfg = aInput.data()
             do {
-                if (Object.keys(lyot).length){
-                    mdl = lyot
+                if (cfg["layout"] !== undefined){
+                    mdl = cfg["layout"]
                 }else{
                     var pths = Pipelines().input({filter: ["Json files (*.json)"], folder: false}, "", null, true).asyncCall("_selectFile").data()
                     if (!pths.length)
@@ -68,6 +68,13 @@ Item{
                     mdl = dt.scope().data("data")["layout"] || {}
                 }
                 index = mdl.length
+
+                if (cfg["layout_mode"] !== undefined)
+                    layout_mode = cfg["layout_mode"]
+                if (cfg["ide_type"] !== undefined)
+                    ide_type = cfg["ide_type"]
+                if (cfg["ide_status"] !== undefined)
+                    ide_status = cfg["ide_status"]
                 aInput.outs(mdl, "updateLayout")
             }while(0)
         }, {name: "loadView"})
@@ -100,21 +107,7 @@ Item{
             }
         }, {name: "updateLayoutGrid"})
 
-        Pipelines().add(function(aInput){
-            var dt = aInput.data()
-            ide_type[dt["index"].toString()] = dt["visible"]
-            aInput.outs("", "saveGridModel")
-        }, {name: "ideVisibleChanged"})
-
-        Pipelines().add(function(aInput){
-            var dt = aInput.data()
-            var idx = dt.tag.split("_")[0].split("reagrid")[1]
-            delete dt["tag"]
-            ide_status[idx] = dt
-            aInput.outs("", "saveGridModel")
-        }, {name: "storageOpened"})
-
-        Pipelines().find("layoutChanged").nextF(function(aInput){
+        var save_model = Pipelines().find("layoutChanged").nextF(function(aInput){
             mdl = aInput.data()
             aInput.out()
         }).nextF(function(aInput){
@@ -122,15 +115,25 @@ Item{
         }, "", {name: "saveGridModel", external: "c++"})
 
         Pipelines().add(function(aInput){
-            if (aInput.data() === ""){
-                layout_mode = !layout_mode
-                Pipelines().run("saveGridModel", "")
-            }else{
-                layout_mode = aInput.data()
-                ide_type = aInput.scope().data("ide_type") || {}
-                ide_status = aInput.scope().data("ide_status") || {}
-            }
-            aInput.setData(layout_mode).out()
+            var dt = aInput.data()
+            ide_type[dt["index"].toString()] = dt["visible"]
+            aInput.out()
+        }, {name: "ideVisibleChanged"})
+        .next(save_model.actName())
+
+        Pipelines().add(function(aInput){
+            var dt = aInput.data()
+            var idx = dt.tag.split("_")[0].split("reagrid")[1]
+            delete dt["tag"]
+            ide_status[idx] = dt
+            aInput.out()
+        }, {name: "storageOpened"})
+        .next(save_model.actName())
+
+        Pipelines().add(function(aInput){
+            layout_mode = !layout_mode
+            aInput.out()
         }, {name: "enableLayout"})
+        .next(save_model.actName())
     }
 }
