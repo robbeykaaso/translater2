@@ -107,6 +107,10 @@ Item{
             }
         }, {name: "updateLayoutGrid"})
 
+        Pipelines().add(function(aInput){
+            aInput.setData(ide_type).out()
+        }, {name: "getIdeTypes"})
+
         var save_model = Pipelines().find("layoutChanged").nextF(function(aInput){
             mdl = aInput.data()
             aInput.out()

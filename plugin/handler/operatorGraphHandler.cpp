@@ -1,5 +1,5 @@
 #include "handler.h"
-#include "../../operatorGraph.h"
+#include "optGraph.h"
 #include "qsgModel.h"
 #include "qsgBoard.h"
 #include "command.h"
@@ -48,7 +48,7 @@ private:
             auto pth = scp->data<QString>("path");
             auto id = handler::calcID(pth, rt, cfg);
             auto opts = m_data.value(id).value("operators").toObject();
-            auto graph = std::make_shared<operatorGraph>(id);
+            auto graph = std::make_shared<rea::operatorGraph>(id);
             graph->build(opts);
             graph->run();
         }, rea::Json("name", "runOperatorGraph"));
@@ -555,6 +555,8 @@ protected:
              rea::pointList pts;
              m_selects = aInput->data();
              auto mdl = getQSGModel();
+             if (!mdl)
+                return;
              if (m_selects.size() > 0){
                  auto bnd = calcSelectsBound(m_selects, mdl->getQSGObjects());
                  pts.push_back(bnd.topLeft());
@@ -659,3 +661,177 @@ static rea::regPip<QJsonObject, rea::pipePartial> plugin_select2([](rea::stream<
     aInput->scope()->cache<std::shared_ptr<rea::qsgBoardPlugin>>("result", plg);
     aInput->out();
 }, rea::Json("name", "create_qsgboardplugin_selectc2", "befored", "create_qsgboardplugin_select"));
+
+#ifdef USEOPENCV
+#include "plugin/opencv/util.h"
+
+const static QString ImageFormat_None = "None";
+const static QString ImageFormat_Gray = "Gray";
+const static QString ImageFormat_RGB = "RGB";
+const static QString ImageFormat_BGR = "BGR";
+
+const static QString ImageFormat_BayerBG = "BayerBG";
+const static QString ImageFormat_BayerGB = "BayerGB";
+const static QString ImageFormat_BayerRG = "BayerRG";
+const static QString ImageFormat_BayerGR = "BayerGR";
+
+bool convertImage(const cv::Mat& image, cv::Mat& cvt_image,
+                  const QString& origin_format, const QString& dest_format) {
+  if (origin_format == ImageFormat_BayerGR) {
+    if (dest_format == ImageFormat_RGB) {
+      cv::cvtColor(image, cvt_image, cv::COLOR_BayerGR2RGB);
+    } else if (dest_format == ImageFormat_BGR) {
+      cv::cvtColor(image, cvt_image, cv::COLOR_BayerGR2BGR);
+    } else if (dest_format == ImageFormat_Gray) {
+      cv::cvtColor(image, cvt_image, cv::COLOR_BayerGR2GRAY);
+    } else {
+      qDebug() << "does not support converting format " << origin_format << " to " << dest_format;
+      return false;
+    }
+  } else if (origin_format == ImageFormat_BayerRG) {
+    if (dest_format == ImageFormat_RGB) {
+      cv::cvtColor(image, cvt_image, cv::COLOR_BayerRG2RGB);
+    } else if (dest_format == ImageFormat_BGR) {
+      cv::cvtColor(image, cvt_image, cv::COLOR_BayerRG2BGR);
+    } else if (dest_format == ImageFormat_Gray) {
+      cv::cvtColor(image, cvt_image, cv::COLOR_BayerRG2GRAY);
+    } else {
+      qDebug() << "does not support converting format " << origin_format << " to " << dest_format;
+      return false;
+    }
+  } else if (origin_format == ImageFormat_BayerGB) {
+    if (dest_format == ImageFormat_RGB) {
+      std::cout << "hello" << std::endl;
+      cv::cvtColor(image, cvt_image, cv::COLOR_BayerGB2RGB);
+      std::cout << "world" << std::endl;
+    } else if (dest_format == ImageFormat_BGR) {
+      cv::cvtColor(image, cvt_image, cv::COLOR_BayerGB2BGR);
+    } else if (dest_format == ImageFormat_Gray) {
+      cv::cvtColor(image, cvt_image, cv::COLOR_BayerGB2GRAY);
+    } else {
+      qDebug() << "does not support converting format " << origin_format << " to " << dest_format;
+      return false;
+    }
+  } else if (origin_format == ImageFormat_BayerBG) {
+    if (dest_format == ImageFormat_RGB) {
+      cv::cvtColor(image, cvt_image, cv::COLOR_BayerBG2RGB);
+    } else if (dest_format == ImageFormat_BGR) {
+      cv::cvtColor(image, cvt_image, cv::COLOR_BayerBG2BGR);
+    } else if (dest_format == ImageFormat_Gray) {
+      cv::cvtColor(image, cvt_image, cv::COLOR_BayerBG2GRAY);
+    } else {
+      qDebug() << "does not support converting format " << origin_format << " to " << dest_format;
+      return false;
+    }
+  } else if (origin_format == ImageFormat_RGB) {
+    if (dest_format == ImageFormat_BGR) {
+      cv::cvtColor(image, cvt_image, cv::COLOR_RGB2BGR);
+    } else if (dest_format == ImageFormat_Gray) {
+      cv::cvtColor(image, cvt_image, cv::COLOR_RGB2GRAY);
+    } else {
+      qDebug() << "does not support converting format " << origin_format << " to " << dest_format;
+      return false;
+    }
+  } else if (origin_format == ImageFormat_Gray) {
+    if (dest_format == ImageFormat_RGB) {
+      cv::cvtColor(image, cvt_image, cv::COLOR_GRAY2RGB);
+    } else {
+      qDebug() << "does not support converting format " << origin_format << " to " << dest_format;
+      return false;
+    }
+  } else {
+    qDebug() << "does not support converting source format " << origin_format;
+    return false;
+  }
+  return true;
+}
+
+//  {
+//      "type": "convertImageFormat",
+//      "input": 0,
+//      "origin": "",
+//      "target": "",
+//      "imageIndex": [],
+//      "thread": 2,
+//      "next": ["output1", "output2"]
+//  }
+static rea::regPip<bool> convertImageFormat([](rea::stream<bool>* aInput){
+    auto prms = aInput->scope()->data<QJsonObject>("param");
+    auto idxes = prms.value("imageIndex").toArray();
+    auto imgs = aInput->scope()->data<std::vector<QImage>>("images");
+    auto org = prms.value("origin").toString(), tgt = prms.value("target").toString();
+    aInput->setData(true);
+    for (auto i = 0; i < idxes.size(); ++i){
+        auto idx = size_t(idxes[i].toInt());
+        auto img = imgs.at(idx);
+        auto mt = QImage2cvMat(img);
+        cv::Mat img0;
+        if (convertImage(mt, img0, org, tgt))
+            imgs[idx] = cvMat2QImage(img0);
+        else
+            aInput->setData(false);
+    }
+    aInput->scope()->cache("images", imgs);
+    aInput->out();
+}, rea::Json("name", "convertImageFormat"));
+
+#endif
+
+#ifdef USECGAL
+#include <CGAL/Polygon_2_algorithms.h>
+#include <CGAL/squared_distance_2.h>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+
+typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+typedef K::Point_2 Point_2;
+typedef K::Segment_2 Segment_2;
+
+double pointProjectToLine2D(const Point_2& aPoint, const Point_2& aLineStart, const Point_2& aLineEnd){
+    K::Vector_2 vec_s = aPoint - aLineStart, vec_e = aLineEnd - aLineStart;
+    return CGAL::scalar_product(vec_s, vec_e) / vec_e.squared_length();
+}
+
+class transformedAspect{
+protected:
+    void transformUpdated(){
+
+    }
+    bool pointIsInRange(const QMatrix4x4& aTransform, const std::vector<rea::pointList>& aPoints, const QPointF& aPoint, const double aRadius = 5){
+        auto pt = aTransform.map(aPoint);
+        auto tar = Point_2(pt.x(), pt.y());
+        auto r = aTransform.data()[0] * 5;
+        r *= r;
+        for (auto i : aPoints)
+            for (int j = 0; j < i.size() - 1; ++j){
+                auto st = Point_2(i[j].x(), i[j].y()), ed = Point_2(i[j + 1].x(), i[j + 1].y());
+                auto prm = pointProjectToLine2D(tar, st, ed);
+                if (prm >= 0 && prm <= 1){
+                    auto dis = CGAL::squared_distance(tar, Segment_2(st, ed));
+                    if (dis < r)
+                        return true;
+                }
+            }
+        return false;
+    }
+};
+
+class linkObject : public rea::polyObject, transformedAspect{
+public:
+    linkObject(const QJsonObject& aConfig) : polyObject(aConfig){
+
+    }
+    bool bePointSelected(double aX, double aY) override{
+        return pointIsInRange(reinterpret_cast<QSGTransformNode*>(m_outline->parent())->matrix(), m_points, QPointF(aX, aY));
+    }
+protected:
+    void updateTransform() override{
+        shapeObject::updateTransform();
+        transformUpdated();
+    }
+};
+
+static rea::regPip<QJsonObject, rea::pipePartial> init_createlink([](rea::stream<QJsonObject>* aInput){
+    aInput->scope()->cache<std::shared_ptr<rea::qsgObject>>("result", std::make_shared<linkObject>(aInput->data()));
+    aInput->out();
+}, rea::Json("name", "create_qsgobject_link"));
+#endif

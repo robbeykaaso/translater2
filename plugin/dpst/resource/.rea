@@ -1,0 +1,21 @@
+{
+    "c++": "c++",
+    "qml": "qml",
+    "client": {
+        "ip0": "127.0.0.1",
+        "port0": "8081",
+        "id0": "1234",
+        "connects": [{
+            "local": "c++",
+            "remote": "c++_server",
+            "remoteLocal": "c++"
+        },
+        {
+            "local": "qml",
+            "remote": "qml_server",
+            "remotelocal": "qml",
+            "qml": true
+        }]
+    },
+    "process": ["process/process1/REA_SERVER.exe"]
+}

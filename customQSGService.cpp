@@ -1,5 +1,5 @@
 #include "qsgBoard.h"
-#include "operatorGraph.h"
+#include "optGraph.h"
 
 class showPosPixelAspect : public rea::qsgPluginTransform{
 public:
@@ -116,7 +116,7 @@ protected:
                 mdy.insert(operators[i].first, operators[i].second);
             }
 
-            auto graph = std::make_shared<operatorGraph>();
+            auto graph = std::make_shared<rea::operatorGraph>();
             graph->build(mdy);
             graph->run(imgs);
         });

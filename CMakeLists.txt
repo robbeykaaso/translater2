@@ -36,8 +36,6 @@ set(my_Sources
     "fileMonitor.cpp"
     "recoverUserState.cpp"
     "customQSGService.cpp"
-    "operatorGraph.h"
-    "operatorGraph.cpp"
     )
 
 set(my_Libs

@@ -41,7 +41,7 @@ Rectangle{
         }
         Combo{
             id: view
-            property var val
+            property var val: []
             anchors.horizontalCenter: parent.horizontalCenter
             height: 30
             width: parent.width - 20

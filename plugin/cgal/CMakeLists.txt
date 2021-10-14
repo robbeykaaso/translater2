@@ -5,7 +5,7 @@ if (${USECGAL} STREQUAL "ON")
     add_definitions(-DUSECGAL)
     set(my_Sources
         ${my_Sources}
-        "plugin/cgal/shape.cpp"
+        #"plugin/cgal/shape.cpp"
         )
     set(my_Libs
         ${my_Libs}

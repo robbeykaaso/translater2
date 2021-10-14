@@ -24,5 +24,9 @@
         <file>gui/service/optgph/OptGph/showOneImage.qml</file>
         <file>gui/service/optgph/OptGph/Util.qml</file>
         <file>gui/service/optgph/OptGph/ViewMonitor.qml</file>
+        <file>gui/service/dpst_train/Deepsight.qml</file>
+        <file>gui/service/dpst_anno/DpstQSG.qml</file>
+        <file>gui/service/dpst_train/dialog/ViewMap.qml</file>
+        <file>gui/service/dpst_train/dialog/VisibleSet.qml</file>
     </qresource>
 </RCC>
