@@ -50,7 +50,7 @@ static rea::regPip<QQmlApplicationEngine*> reg_tcp_linker([](rea::stream<QQmlApp
     aInput->out();
 }, QJsonObject(), "install0_tcp");
 
-static rea::regPip<QQmlApplicationEngine*> load_window([](rea::stream<QQmlApplicationEngine*>* aInput){
+static rea::regPip<QQmlApplicationEngine*> load_dialog([](rea::stream<QQmlApplicationEngine*>* aInput){
     aInput->data()->load("file:gui/service/dpst_train/dialog/ViewMap.qml");
     aInput->data()->load("file:gui/service/dpst_train/dialog/VisibleSet.qml");
     aInput->out();

@@ -12,7 +12,6 @@
         <file>gui/service/image/QSG.qml</file>
         <file>gui/service/text/TXT.qml</file>
         <file>gui/service/resource__/Resource.qml</file>
-        <file>service/ImageShow.qml</file>
         <file>gui/service/3d/SG.qml</file>
         <file>gui/service/echart/chart.qml</file>
         <file>gui/service/html/Web2.qml</file>
@@ -28,5 +27,6 @@
         <file>gui/service/dpst_anno/DpstQSG.qml</file>
         <file>gui/service/dpst_train/dialog/ViewMap.qml</file>
         <file>gui/service/dpst_train/dialog/VisibleSet.qml</file>
+        <file>gui/service/image/dialog/ImageShow.qml</file>
     </qresource>
 </RCC>

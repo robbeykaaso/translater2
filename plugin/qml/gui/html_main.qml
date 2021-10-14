@@ -124,9 +124,6 @@ ApplicationWindow {
     Service{
 
     }
-    ImageShow{
-
-    }
     Interface{
 
     }

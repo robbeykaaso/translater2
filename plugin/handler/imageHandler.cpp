@@ -3,6 +3,7 @@
 #include <QImage>
 #include <QFileInfo>
 #include <QDateTime>
+#include <QQmlApplicationEngine>
 
 class imageHandler : private handler{
 private:
@@ -58,3 +59,8 @@ static rea::regPip<QString> clearSelects([](rea::stream<QString>* aInput){
     rea::pipeline::instance()->run<double>("clearSelects_reagrid" + QString::number(int(idx)) + "_ide_image");
     aInput->out();
 }, rea::Json("after", "openWorkFile"));
+
+static rea::regPip<QQmlApplicationEngine*> load_dialog([](rea::stream<QQmlApplicationEngine*>* aInput){
+    aInput->data()->load("file:gui/service/image/dialog/ImageShow.qml");
+    aInput->out();
+},  rea::Json("before", "loadMain"));

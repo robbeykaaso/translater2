@@ -29,13 +29,5 @@ Item{
         for (var i in handlers){
             provideHandlerGUI(i, handlers[i])
         }
-
-        Pipelines().add(function(aInput){
-          aInput.out()
-        }, {name: "_Close_File"})
-
-        Pipelines().add(function(aInput){
-          aInput.out()
-        }, {name: "_Save_File"})
     }
 }

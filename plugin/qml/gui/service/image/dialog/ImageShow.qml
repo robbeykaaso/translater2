@@ -1,5 +1,5 @@
 import QtQuick 2.12
-import "../qml/gui/Basic"
+import "../../../../qml/gui/Basic"
 
 TWindow{
     width: 260
