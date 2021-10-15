@@ -2,13 +2,9 @@ if (${USEQML} STREQUAL "ON")
     list(APPEND gui_source
         "${CMAKE_SOURCE_DIR}/../frm/qml"
         "${CMAKE_SOURCE_DIR}/plugin/qml/gui"
-        "${CMAKE_SOURCE_DIR}/plugin/qml/service"
-        "${CMAKE_SOURCE_DIR}/plugin/qml/res"
         )
     list(APPEND gui_target
         "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/../qml"
         "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/../gui"
-        "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/../service"
-        "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/../res"
         )
 endif()

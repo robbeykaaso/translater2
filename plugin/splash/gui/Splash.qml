@@ -17,7 +17,7 @@ Window {
 
     Image {
         id: splashImage
-        source: "file:res/splash.png"
+        source: "file:gui/assets/splash.png"
         Text{
             x: parent.width - width - 20
             y: 240
@@ -50,9 +50,16 @@ Window {
             timer.start()
         }
     }*/
-    Component.onCompleted: {
-        Pipelines().add(function(aInput){
+
+    Timer {
+        id: timer
+        interval: 1000; running: false; repeat: false
+        onTriggered: {
             splash.close()
-        }, {name: "closeSplash"})
+        }
+    }
+
+    Component.onCompleted: {
+        timer.start()
     }
 }

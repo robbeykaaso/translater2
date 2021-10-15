@@ -1,7 +1,18 @@
 import QtQuick 2.12
-
+import "../qml/gui/Pipe"
 Item{
+    File{
 
+    }
+    Progress{
+
+    }
+    PWindow{
+
+    }
+    MsgDialog{
+
+    }
     function setParam(aType){
         Pipelines().add(function(aInput){
             var tg = aInput.tag()

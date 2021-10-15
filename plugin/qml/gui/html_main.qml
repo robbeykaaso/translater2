@@ -4,7 +4,6 @@ import QtQuick.Controls 2.5
 import QtQuick.Controls.Styles 1.4
 import "../qml/gui/Basic"
 import "../qml/gui/Pipe"
-import "../service"
 
 ApplicationWindow {
     id: main_window
@@ -112,31 +111,10 @@ ApplicationWindow {
                 }
             }
         }
-    Progress{
+    CommonSv{
 
     }
-    File{
+    CustomSv{
 
-    }
-    PWindow{
-
-    }
-    Service{
-
-    }
-    Interface{
-
-    }
-
-    Timer {
-        id: timer
-        interval: 1000; running: false; repeat: false
-        onTriggered: {
-            Pipelines().run("closeSplash", true)
-        }
-    }
-
-    Component.onCompleted: {
-        timer.start()
     }
 }

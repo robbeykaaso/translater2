@@ -35,8 +35,8 @@ Rectangle{
         }
     }
 
-    function openCurrent(){
-        Pipelines().run("openWorkFile", detail, "", {root: rt, config: stg_config, index: index})
+    function openCurrent(aScope){
+        Pipelines().run("openWorkFile", detail, "", aScope ? aScope.cache("root", rt).cache("config", stg_config).cache("index", index) : {root: rt, config: stg_config, index: index})
     }
 
     Rectangle{
@@ -141,6 +141,10 @@ Rectangle{
     }
 
     Component.onCompleted: {
+        Pipelines().add(function(aInput){
+            openCurrent(aInput.scope())
+        }, {name: name + "_refresh"})
+
         Pipelines().find("qml_modelOpened").nextF(function(aInput){
             if (aInput.scope().data("index") === (index * 1.0)){
                 do{

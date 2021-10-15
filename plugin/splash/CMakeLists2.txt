@@ -1,0 +1,8 @@
+if (${USESPLASH} STREQUAL "ON")
+    list(APPEND gui_source
+        "${CMAKE_SOURCE_DIR}/plugin/splash/gui"
+        )
+    list(APPEND gui_target
+        "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/../gui"
+        )
+endif()

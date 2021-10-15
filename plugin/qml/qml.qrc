@@ -1,12 +1,7 @@
 <RCC>
     <qresource prefix="/">
-        <file>res/splash.png</file>
-        <file>service/Interface.qml</file>
-        <file>service/Splash.qml</file>
         <file>gui/html_main.qml</file>
-        <file>service/ReaGrid.qml</file>
         <file>gui/GridItem.qml</file>
-        <file>service/Service.qml</file>
         <file>gui/GridsModel.qml</file>
         <file>gui/Web.qml</file>
         <file>gui/service/image/QSG.qml</file>
@@ -28,5 +23,8 @@
         <file>gui/service/dpst_train/dialog/ViewMap.qml</file>
         <file>gui/service/dpst_train/dialog/VisibleSet.qml</file>
         <file>gui/service/image/dialog/ImageShow.qml</file>
+        <file>gui/CommonSv.qml</file>
+        <file>gui/CustomSv.qml</file>
+        <file>gui/ReaGrid.qml</file>
     </qresource>
 </RCC>
