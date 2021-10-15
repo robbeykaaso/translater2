@@ -123,15 +123,14 @@ function prepareEntry(aID, aText){
   return entry
 }
 
+function createChildNode(aTarget){
+  let tgts = aTarget.split("/")
+  let ent = prepareEntry(aTarget, tgts.pop())
+  let prt = tgts.join("/")
+  tr.jstree().create_node(prt == mdl.id ? "#" : [tgts.join("/")], ent)
+}
+
 async function copyFileOrDir(aFileOrDir, aOriRoot, aRoot, aTarget, aOriConfig){
-
-  function createChildNode(){
-    let tgts = aTarget.split("/")
-    let ent = prepareEntry(aTarget, tgts.pop())
-    let prt = tgts.join("/")
-    tr.jstree().create_node(prt == mdl.id ? "#" : [tgts.join("/")], ent)
-  }
-
   let fls = (await rea.pipelines().input(aFileOrDir, "", new rea.scopeCache({config: aOriConfig}), true).asyncCall("js_" + aOriRoot + "listFiles")).scope().data("data")
   let clds = []
   for (let i in fls)
@@ -144,10 +143,10 @@ async function copyFileOrDir(aFileOrDir, aOriRoot, aRoot, aTarget, aOriConfig){
       stm.setData(false).scope().cache("path", aTarget).cache("config", mdl.config)
       await stm.asyncCall("js_" + aRoot + "writeByteArray")
       rea.pipelines().run("js_updateProgress", {})
-      createChildNode()
+      createChildNode(aTarget)
     }
   }else{
-    createChildNode()
+    createChildNode(aTarget)
     rea.pipelines().run("js_updateProgress", {step: clds.length - 1})
     for (let i in clds)
       await copyFileOrDir(aFileOrDir + "/" + clds[i], aOriRoot, aRoot, aTarget + "/" + clds[i], aOriConfig)
@@ -187,6 +186,40 @@ async function pasteFiles(aSels, aData){
   rea.pipelines().run("js_updateProgress", {title: "copying...", sum: aData.files.length})
   for (let i in aData.files)
     await copyFileOrDir(aData.files[i], aData.root, src_mode == "aws_sys" ? "aws0" : "", (prt == "" ? "" : prt + "/") + aData.files[i].split("/").pop(), aData.config)
+}
+
+async function newFiles(aSels){
+  let prt = mdl.id
+  if (aSels.length){
+    if (aSels[0].split("/").pop().indexOf(".") < 0)
+      prt = aSels[0]
+    else
+      return
+  }
+  let stm = await rea.pipelines().input({
+    title: "new file",
+    content: {
+      name: {
+          value: ""
+      }
+    }
+  }, "newfile")
+  .asyncCall("js_setParam")
+  let nm = stm.data()["name"]
+  if (nm == ""){
+      rea.pipelines().run("popMessage", {title: "warning", text: "invalid name"})
+      return
+  }
+  let pth = (prt == "" ? "" : prt + "/") + nm
+  let rt = src_mode == "aws_sys" ? "aws0" : ""
+  let exist = (await rea.pipelines().input(false, "", new rea.scopeCache({path: pth, config: mdl.config}), true).asyncCall("js_" + rt + "readByteArray"))
+  if (exist.data()){
+      rea.pipelines().run("popMessage", {title: "warning", text: "existed file"})
+      return
+  }
+  let ret = await rea.pipelines().input(false, "", new rea.scopeCache({path: pth, config: mdl.config, data: ""}), true).asyncCall("js_" + rt + "writeByteArray")
+  if (ret.data())
+    createChildNode(pth)
 }
 
 function refreshTree(aData){
@@ -242,6 +275,12 @@ function refreshTree(aData){
               pasteFiles(sels, clipboard)
             }
           }
+        ret["newFile"] = {
+          label: "newFile",
+          action: function(){
+            newFiles(sels)
+          }
+        }
         return ret
       },
       select_node: false,

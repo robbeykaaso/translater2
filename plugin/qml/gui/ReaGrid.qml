@@ -58,8 +58,9 @@ WebEngineView {
             Component.onCompleted: {
                 Pipelines().add(function(aInput){
                     var lo = aInput.data()
-                    if (aInput.scope().data("remove"))
+                    if (aInput.scope().data("remove")){
                         mdls.get(aInput.scope().data("index")).deled = true
+                    }
                     var mx = 0
                     for (var i in lo){
                         var idx = parseInt(lo[i].i)

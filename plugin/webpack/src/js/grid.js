@@ -29,6 +29,7 @@ class MyFirstGrid extends React.Component {
       this.setState({})
     }
     rea.pipelines().add(aInput => {
+      this.layout_modification = aInput.scope()
       this.setState({})
       this.setState({layout: aInput.data()})
       //aInput.outs(this.state.layout, "layoutChanged") //will trig onLayoutChange
@@ -45,7 +46,7 @@ class MyFirstGrid extends React.Component {
     for (let i in aLayout)
       ret.push({i: aLayout[i].i, x: aLayout[i].x, y: aLayout[i].y, w: aLayout[i].w, h: aLayout[i].h, dely: this.state.scrollTop})
     this.state.layout = aLayout
-    rea.pipelines().run("layoutChanged", ret)
+    rea.pipelines().run("layoutChanged", ret, "", this.layout_modification)
   }
   render() {
     let cls = "layout layout-scroll"

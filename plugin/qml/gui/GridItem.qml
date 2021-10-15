@@ -90,10 +90,11 @@ Rectangle{
         visible: !layout_mode
         id: md
         property var iniModel: ["auto"]
-        anchors.bottom: root.bottom
+        //anchors.bottom: root.bottom
         model: iniModel
         width: 80
         height: 20
+        y: parent.height - height
         z: 10
         font.pixelSize: 12
         background: Rectangle{
@@ -102,6 +103,12 @@ Rectangle{
             border.width: grids && grids.cur === index ? 1 : 0
         }
 
+        ToolTip{
+            visible: parent.hovered
+            text: detail
+            x: parent.x + parent.width
+            y: 0
+        }
         indicator: Rectangle { }
         delegate: ItemDelegate {
             id: itemDlgt

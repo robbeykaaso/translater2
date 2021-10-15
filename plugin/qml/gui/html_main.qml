@@ -20,6 +20,13 @@ ApplicationWindow {
                     Pipelines().run("js_saveWorkFile", "")
                 }
             }
+            Action{
+                text: Pipelines().tr("closeModel")
+                shortcut: "Ctrl+C"
+                onTriggered: {
+                    Pipelines().run("js_openWorkFile", "")
+                }
+            }
         }
         Menu{
             title: Pipelines().tr("View")
@@ -68,20 +75,28 @@ ApplicationWindow {
                     }, {name: "js_openWorkFile"}).nextF(function(aInput){
                         var itm = getGridItem(aInput.scope().data("index"))
                         if (itm && !itm.mode.endsWith("__")){
-                            itm.detail = aInput.data()
-                            itm.rt = aInput.scope().data("root")
-                            itm.stg_config = aInput.scope().data("config")
+                            if (aInput.data() === ""){
+                                aInput.scope().cache("root", itm.rt).cache("config", itm.stg_config)
+                                if (itm.mode === "auto")
+                                    aInput.out(itm.detail.split(".").pop().toLowerCase())
+                                else
+                                    aInput.out(itm.mode)
+                            }else{
+                                itm.detail = aInput.data()
+                                itm.rt = aInput.scope().data("root")
+                                itm.stg_config = aInput.scope().data("config")
 
-                            if (itm.mode === "auto")
-                                aInput.out(aInput.data().split(".").pop().toLowerCase())
-                            else
-                                aInput.out(itm.mode)
+                                if (itm.mode === "auto")
+                                    aInput.out(aInput.data().split(".").pop().toLowerCase())
+                                else
+                                    aInput.out(itm.mode)
+                            }
                         }
                     }, "", {name: "openWorkFile", type: "Partial", external: "c++"})
 
                     Pipelines().add(function(aInput){
                         var itm = getGridItem(cur_edit)
-                        if (itm && !itm.mode.endsWith("__")){
+                        if (itm && !itm.mode.endsWith("__") && itm.detail !== ""){
                             aInput.setData(itm.detail).scope()
                             .cache("root", itm.rt)
                             .cache("config", itm.stg_config)
