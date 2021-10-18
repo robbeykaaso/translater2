@@ -81,7 +81,11 @@ qlpy.addEventListener('click', function () {
 
 rea.pipelines("c++").init(function () {
     rea.pipelines().add(function (aInput) {
-        var type = JSON.parse(aInput.data()) ? "json" : aInput.scope().data("suffix")
+        try{
+            var type = JSON.parse(aInput.data()) ? "json" : aInput.scope().data("suffix")
+        }catch(e){
+            type = ""
+        }
         if (type === 'json') {
             editor.setValue(formatJson(aInput.data()))
         } else {

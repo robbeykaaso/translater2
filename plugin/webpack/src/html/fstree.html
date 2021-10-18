@@ -7,8 +7,9 @@
 </head>
 <body>
     <div class="resource-tree">
-        <div class="search_box"><input type="text" id="search_input" placeholder="请输入信息搜索" /></div>
-        <div id="jstree"></div>
+        <div class="search_box"><input type="text" oninput="searchTree()" id="search_input" placeholder="请输入信息搜索" />
+        </div>
+        <div id="jstree" style="padding-bottom: 20px"></div>
     </div>
 </body>
 </html>
