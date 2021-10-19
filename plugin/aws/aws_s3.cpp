@@ -286,7 +286,7 @@ bool AWSClient::list_s3_objects(const Aws::String &bucket_name, const Aws::Strin
     if (!m_valid)
         return false;
     Aws::S3::Model::ListObjectsRequest object_request;
-    object_request.WithBucket(bucket_name).WithPrefix(perfix).WithMaxKeys(1000).WithDelimiter("/");
+    object_request.WithBucket(bucket_name).WithPrefix(perfix).WithMaxKeys(200).WithDelimiter("/");
     if (aMarker != "")
         object_request.WithMarker(aMarker);
     auto list_object_outcome = client_->ListObjects(object_request);

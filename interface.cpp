@@ -222,6 +222,11 @@ static rea::regPip<QQmlApplicationEngine*> test_qsg([](rea::stream<QQmlApplicati
         rea::Json("name", "qml_listFiles",
                   "befored", "listFiles",
                   "external", "qml"));
+    rea::pipeline::instance()->add<QString>(list_files,
+        rea::Json("name", "qml_aws0listFiles",
+                  "thread", 10,
+                  "befored", "aws0listFiles",
+                  "external", "qml"));
 
     rea::pipeline::instance()->add<QString>(list_files,
         rea::Json("name", "js_listFiles",
@@ -238,9 +243,11 @@ static rea::regPip<QQmlApplicationEngine*> test_qsg([](rea::stream<QQmlApplicati
     rea::pipeline::instance()->add<QString, rea::pipeParallel>(only_out,
         rea::Json("name", "js_aws0deletePath",
                   "befored", "aws0deletePath",
-                  "external", "js"));
+                  "external", "js",
+                  "thread", 11));
     rea::pipeline::instance()->add<QString>(list_files,
         rea::Json("name", "js_aws0listFiles",
+                  "thread", 10,
                   "befored", "aws0listFiles",
                   "external", "js"));
     //control

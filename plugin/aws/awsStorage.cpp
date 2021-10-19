@@ -147,10 +147,12 @@ void awsStorage::initialize(){
 
     rea::pipeline::instance()->add<QString, rea::pipePartial>([this](rea::stream<QString>* aInput){
         checkSameEnd(aInput->scope()->data<QJsonObject>("config"));
+        rea::pipeline::instance()->run("c++_updateProgress", rea::Json("title", "scanned...", "sum", 1));
         auto fls = listFiles(aInput->data());
+        rea::pipeline::instance()->run("c++_updateProgress", QJsonObject());
         aInput->scope()->cache("data", fls);
         aInput->out();
-    }, rea::Json("name", m_root + "listFiles"));
+    }, rea::Json("name", m_root + "listFiles", "thread", 10));
 
     rea::pipeline::instance()->add<QString, rea::pipePartial>([this](rea::stream<QString>* aInput){
         checkSameEnd(aInput->scope()->data<QJsonObject>("config"));
@@ -162,9 +164,11 @@ void awsStorage::initialize(){
 
     rea::pipeline::instance()->add<QString, rea::pipeParallel>([this](rea::stream<QString>* aInput){
         checkSameEnd(aInput->scope()->data<QJsonObject>("config"));
+        rea::pipeline::instance()->run("c++_updateProgress", rea::Json("title", "processing...", "sum", 1));
         deletePath(aInput->data());
+        rea::pipeline::instance()->run("c++_updateProgress", QJsonObject());
         aInput->out();
-    }, rea::Json("name", m_root + "deletePath"));
+    }, rea::Json("name", m_root + "deletePath", "thread", 11));
 
     rea::pipeline::instance()->add<QString, rea::pipePartial>([this](rea::stream<QString>* aInput){
         checkSameEnd(aInput->scope()->data<QJsonObject>("config"));
@@ -217,6 +221,7 @@ std::vector<QString> awsStorage::listFiles(const QString& aDirectory){
     std::vector<QString> ret;
     do{
         m_aws.list_s3_objects(m_root.toStdString().data(), dir.toStdString().data(), lst, mk.toStdString().data());
+        rea::pipeline::instance()->run("c++_updateProgress", rea::Json("step", - int(lst.size())));
         for (auto i : lst){
             auto fl = QString::fromStdString(i);
             fl.remove(0, aDirectory.length() + (aDirectory == "" ? 0 : 1));
@@ -227,11 +232,13 @@ std::vector<QString> awsStorage::listFiles(const QString& aDirectory){
                 ret.push_back(fl);
             }
         }
-        if (lst.size() >= 999){
+        rea::pipeline::instance()->run("c++_updateProgress", rea::Json("step", int(lst.size())));
+        if (lst.size() >= 199){
             mk = QString::fromStdString(lst.back());
             lst.clear();
-        }else
+        }else{
             mk = "";
+        }
     }while(mk != "");
     return ret;
 }
@@ -323,14 +330,15 @@ bool awsStorage::readByteArray(const QString& aPath, QByteArray& aData){
     return false;
 }
 
-void deleteAWSDirectory(AWSClient& aClient, const QString& aBucket, const QString& aPath){
+void awsStorage::deleteAWSDirectory(AWSClient& aClient, const QString& aBucket, const QString& aPath){
     if (aPath.indexOf(".") >= 0 || aPath.endsWith("/"))
         aClient.delete_s3_object(aBucket.toStdString().c_str(), aPath.toStdString().c_str());
     else{
-        std::vector<std::string> lst;
-        aClient.list_s3_objects(aBucket.toStdString().c_str(), aPath.toStdString().c_str(), lst);
+        std::vector<QString> lst = listFiles(aPath);
+        rea::pipeline::instance()->run("c++_updateProgress", rea::Json("step", - int(lst.size())));
         for (auto i : lst)
-            deleteAWSDirectory(aClient, aBucket, QString::fromStdString(i));
+            deleteAWSDirectory(aClient, aBucket, aPath + "/" + i);
+        rea::pipeline::instance()->run("c++_updateProgress", rea::Json("step", int(lst.size())));
     }
 }
 

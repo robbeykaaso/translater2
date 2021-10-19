@@ -31,6 +31,7 @@ protected:
     AWSClient m_aws;
 private:
     void checkSameEnd(const QJsonObject& aConfig);
+    void deleteAWSDirectory(AWSClient& aClient, const QString& aBucket, const QString& aPath);
 };
 
 #endif

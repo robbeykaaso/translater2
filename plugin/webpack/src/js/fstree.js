@@ -71,7 +71,8 @@ let src = {
         dir0 += aPathList[i]
       }
     }
-    return (await rea.pipelines().input(dir0, "", null, true).asyncCall("js_listFiles")).scope().data("data")
+    let ret = (await rea.pipelines().input(dir0, "", null, true).asyncCall("js_listFiles")).scope().data("data")
+    return ret
   },
   aws_sys: async function (aPathList) {
     let dir0 = ""
@@ -456,6 +457,9 @@ tr.on("dblclick.jstree", async function (e) {
   for (let i in dt) {
     if (dt[i] != "." && dt[i] != "..") {
       let ent = prepareEntry(node[0].id + "/" + dt[i], dt[i])
+      let child = JSON.parse(JSON.stringify(ent))
+      child.parentId = node[0].id
+      all_node.push(child)
       tr.jstree().create_node([node[0].id], ent)
     }
   }
