@@ -29,8 +29,12 @@ public:
             aInput->outs(layout_cfg, "loadView");
         }, rea::Json("name", "reaGridLoaded"));
 
-        rea::pipeline::instance()->add<QString>([this](rea::stream<QString>* aInput){
-            auto layout_cfg = m_sets->value("layout").toJsonObject();
+        rea::pipeline::instance()->add<QString>([](rea::stream<QString>* aInput){
+            aInput->out();
+        }, rea::Json("name", "viewLoaded"))->nextFB<QString>([this](rea::stream<QString>* aInput){
+            auto layout_cfg = aInput->scope()->data<QJsonObject>("layout");
+            if (layout_cfg.empty())
+                layout_cfg = m_sets->value("layout").toJsonObject();
             auto tp = layout_cfg.value("ide_type").toObject();
 
             auto dt = aInput->data();
@@ -44,7 +48,7 @@ public:
                     aInput->outs(stg.value("config").toObject(), "openAWS_" + aInput->data());
                 }
             }
-        }, rea::Json("name", "reaResourceLoaded"));
+        }, "", rea::Json("name", "reaResourceLoaded"));
     }
 private:
     std::shared_ptr<QSettings> m_sets;

@@ -56,17 +56,17 @@ Item{
         Pipelines().add(function(aInput){
             var cfg = aInput.data()
             do {
-                if (cfg["layout"] !== undefined){
-                    mdl = cfg["layout"]
-                }else{
+                if (cfg["layout"] === undefined){
                     var pths = Pipelines().input({filter: ["Json files (*.json)"], folder: false}, "", null, true).asyncCall("_selectFile").data()
                     if (!pths.length)
                         break
                     var dt = Pipelines().input(false, "", {path: pths[0]}, true).asyncCall("qml_readJsonObject")
                     if (!dt.data())
                         break
-                    mdl = dt.scope().data("data")["layout"] || {}
+                    cfg = dt.scope().data("data")
+                    aInput.outs("", "saveGridModel")
                 }
+                mdl = cfg["layout"] || {}
                 index = mdl.length
 
                 if (cfg["layout_mode"] !== undefined)
@@ -76,6 +76,7 @@ Item{
                 if (cfg["ide_status"] !== undefined)
                     ide_status = cfg["ide_status"]
                 aInput.outs(mdl, "updateLayout")
+                aInput.outs("", "").scope(true).cache("layout", cfg)
             }while(0)
         }, {name: "loadView"})
 

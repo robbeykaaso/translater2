@@ -163,7 +163,7 @@ Rectangle{
                     aInput.outs(dt, "recordFileModified")
                 }while(0)
             }
-        }, {name: name + "_modelOpened"})
+        }, "", {name: name + "_modelOpened"})
     }
 
     StackView{
@@ -207,10 +207,13 @@ Rectangle{
             }, {name: name + "_handle_created"})
 
             Pipelines().run("create_handler", "", "", {name: name, width: root.width, height: root.height})
-            if (init_edit_mode && init_edit_mode !== "auto"){
-                md.isInit = true
+
+            Pipelines().find("loadView").nextF(function(aInput){
                 md.currentIndex = md.model.indexOf(init_edit_mode)
-            }
+                aInput.outs(name + "_ide_resource__", "viewLoaded")
+            }, "", {name: name + "_viewLoaded"})
+
+            md.currentIndex = md.model.indexOf(init_edit_mode)
         }
     }
 
