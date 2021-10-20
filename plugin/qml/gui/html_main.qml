@@ -1,56 +1,11 @@
 import QtQuick 2.12
-import QtQuick.Window 2.12
 import QtQuick.Controls 2.5
-import QtQuick.Controls.Styles 1.4
-import "../qml/gui/Basic"
-import "../qml/gui/Pipe"
 
 ApplicationWindow {
     id: main_window
     width: 800
     height: 600
     visible: true
-    menuBar: MenuBar{
-        Menu{
-            title: Pipelines().tr("File")
-            Action{
-                text: Pipelines().tr("saveModel")
-                shortcut: "Ctrl+S"
-                onTriggered: {
-                    Pipelines().run("js_saveWorkFile", "")
-                }
-            }
-            Action{
-                text: Pipelines().tr("closeModel")
-                shortcut: "Ctrl+C"
-                onTriggered: {
-                    Pipelines().run("js_openWorkFile", "")
-                }
-            }
-        }
-        Menu{
-            title: Pipelines().tr("View")
-            /*MenuItem{
-                text: Pipelines().tr("test")
-                onTriggered: Pipelines().run("testUpdateLayout", {})
-            }*/
-            MenuItem{
-                text: Pipelines().tr("loadView")
-                onTriggered: Pipelines().run("loadView", {})
-            }
-            MenuItem{
-                text: Pipelines().tr("saveView")
-                onTriggered: Pipelines().run("saveView", 0)
-            }
-            MenuItem{
-                text: Pipelines().tr("layout")
-                onTriggered: Pipelines().run("enableLayout", "")
-            }
-        }
-        Menu{
-            title: Pipelines().tr("Help")
-        }
-    }
 
     GridsModel{
         id: grids_model
@@ -63,8 +18,18 @@ ApplicationWindow {
                 id: container
                 width: parent.width
                 height: parent.height - 30
+
+                Action{
+                    shortcut: "Shift+A"
+                    onTriggered: {
+                        Pipelines().run("enableLayout", "")
+                    }
+                }
+
                 com: GridItem{
+                        hidden_service: grids_model.hidden_service
                         layout_mode: grids_model.layout_mode
+                        model_mode: grids_model.model_mode
                         init_edit_mode: grids_model.ide_type[index.toString()] || "auto"
                         anchors.fill: parent
                     }
@@ -112,19 +77,6 @@ ApplicationWindow {
                         external: "c++"})
                 }
             }
-            Status{
-                style: StatusBarStyle {
-                    background: Rectangle {
-                        color: "#F2F2F2"
-                    }
-                }
-                name: "status"
-                height: 30
-                width: parent.width
-                Component.onCompleted: {
-                    updateStatus([])
-                }
-            }
         }
     CommonSv{
 
@@ -132,4 +84,5 @@ ApplicationWindow {
     CustomSv{
 
     }
+
 }

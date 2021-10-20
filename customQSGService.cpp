@@ -36,7 +36,7 @@ public:
                 }
             }
 
-            aInput->outs(ret, "status_updateStatus");
+            aInput->outs(ret, "_updateStatus");
         }, rea::Json("name", "updateQSGPos_" + getParentName(), "replace", true));
         return ret;
     }

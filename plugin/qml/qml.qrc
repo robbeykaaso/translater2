@@ -26,5 +26,7 @@
         <file>gui/CommonSv.qml</file>
         <file>gui/CustomSv.qml</file>
         <file>gui/ReaGrid.qml</file>
+        <file>gui/service/menu__/mainMenu.qml</file>
+        <file>gui/service/status__/mainStatus.qml</file>
     </qresource>
 </RCC>

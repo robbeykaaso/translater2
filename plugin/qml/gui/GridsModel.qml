@@ -31,6 +31,8 @@ Item{
     property var ide_type: ({})
     property var ide_status: ({})
     property bool layout_mode: true
+    property bool model_mode: true
+    property var hidden_service: []
 
     function nomalizedModel(){
         var act_mdl = []
@@ -44,7 +46,11 @@ Item{
             act_ide_status[idx] = ide_status[mdl[i].i]
             act_mdl.push(grd)
         }
-        return {layout: act_mdl, layout_mode: layout_mode, ide_type: act_ide_type, ide_status: act_ide_status}
+        return {layout: act_mdl,
+                layout_mode: layout_mode,
+                model_mode: model_mode,
+                ide_type: act_ide_type,
+                ide_status: act_ide_status}
     }
 
     Component.onCompleted: {
@@ -71,6 +77,10 @@ Item{
 
                 if (cfg["layout_mode"] !== undefined)
                     layout_mode = cfg["layout_mode"]
+                if (cfg["model_mode"] !== undefined)
+                    model_mode = cfg["model_mode"]
+                if (cfg["hidden_service"] !== undefined)
+                    hidden_service = cfg["hidden_service"]
                 if (cfg["ide_type"] !== undefined)
                     ide_type = cfg["ide_type"]
                 if (cfg["ide_status"] !== undefined)
@@ -139,6 +149,12 @@ Item{
             layout_mode = !layout_mode
             aInput.out()
         }, {name: "enableLayout"})
+        .next(save_model.actName())
+
+        Pipelines().add(function(aInput){
+            model_mode = !model_mode
+            aInput.out()
+        }, {name: "enableModel"})
         .next(save_model.actName())
     }
 }

@@ -5,11 +5,13 @@ Rectangle{
     id: root
     property string name
     property int index
+    property var hidden_service: []
 
     property alias mode: md.currentText
     property string init_edit_mode: "auto"
     property var grids: parent.parent
     property bool layout_mode: true
+    property bool model_mode: true
 
     property string detail: ""
     property string rt
@@ -87,7 +89,7 @@ Rectangle{
 
     ComboBox{
         property bool isInit: true
-        visible: !layout_mode
+        visible: !layout_mode && model_mode
         id: md
         property var iniModel: ["auto"]
         //anchors.bottom: root.bottom
@@ -104,7 +106,7 @@ Rectangle{
         }
 
         ToolTip{
-            visible: parent.hovered
+            visible: parent.hovered && detail !== ""
             text: detail
             x: parent.x + parent.width
             y: 0
@@ -113,7 +115,7 @@ Rectangle{
         delegate: ItemDelegate {
             id: itemDlgt
             width: md.width
-            height: md.height
+            height: hidden_service.indexOf(modelData) < 0 ? md.height : 0
             padding: 0
 
             contentItem: Text {
@@ -210,7 +212,7 @@ Rectangle{
 
             Pipelines().find("loadView").nextF(function(aInput){
                 md.currentIndex = md.model.indexOf(init_edit_mode)
-                aInput.outs(name + "_ide_resource__", "viewLoaded")
+                aInput.outs(name + "_ide_" + stk_vw.lasttype, "viewLoaded")
             }, "", {name: name + "_viewLoaded"})
 
             md.currentIndex = md.model.indexOf(init_edit_mode)
