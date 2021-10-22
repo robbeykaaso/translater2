@@ -1,6 +1,6 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
-import QSGBoard 1.0
+import QSGBoard 2.0
 import "../../../qml/gui/Custom"
 
 Item{

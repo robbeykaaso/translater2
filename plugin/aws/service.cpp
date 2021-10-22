@@ -2,7 +2,7 @@
 #include "awsStorage.h"
 #include <QQmlApplicationEngine>
 
-static rea::regPip<QQmlApplicationEngine*> main_qml([](rea::stream<QQmlApplicationEngine*>* aInput){
+static rea2::regPip<QQmlApplicationEngine*> main_qml([](rea2::stream<QQmlApplicationEngine*>* aInput){
     static awsStorage storage("aws0");
     storage.initialize();
     aInput->out();

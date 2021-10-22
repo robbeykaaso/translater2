@@ -6,16 +6,16 @@
 #include <QDateTime>
 #include <QJsonDocument>
 
-static rea::regPip<QString> create_dpst_anno_handler([](rea::stream<QString>* aInput){
+static rea2::regPip<QString> create_dpst_anno_handler([](rea2::stream<QString>* aInput){
     static dpstAnnoHandler dpst_anno_hdl;
     aInput->outs(aInput->data(), "create_dpst_anno_handler");
 }, QJsonObject(), "create_handler");
 
-static rea::regPip<QString> clearSelects([](rea::stream<QString>* aInput){
+static rea2::regPip<QString> clearSelects([](rea2::stream<QString>* aInput){
     auto idx = aInput->scope()->data<double>("index");
-    rea::pipeline::instance()->run<double>("clearSelects_reagrid" + QString::number(int(idx)) + "_ide_dpst_anno");
+    rea2::pipeline::instance()->run<double>("clearSelects_reagrid" + QString::number(int(idx)) + "_ide_dpst_anno");
     aInput->out();
-}, rea::Json("after", "openWorkFile"));
+}, rea2::Json("after", "openWorkFile"));
 
 void dpstAnnoHandler::switchMode(const QString& aID, const QString& aMode){
     if (aMode == "roi")
@@ -24,15 +24,15 @@ void dpstAnnoHandler::switchMode(const QString& aID, const QString& aMode){
         m_mode.insert(aID, std::make_shared<annoMode>(this));
 }
 
-std::shared_ptr<rea::stream<QString>> dpstAnnoHandler::getTaskInfo(const QString& aID, rea::stream<QString>* aInput){
-    auto info = rea::in(aInput->data(), "", std::make_shared<rea::scopeCache>(rea::Json("root", aInput->scope()->data<QString>("root"),
+std::shared_ptr<rea2::stream<QString>> dpstAnnoHandler::getTaskInfo(const QString& aID, rea2::stream<QString>* aInput){
+    auto info = rea2::in(aInput->data(), "", std::make_shared<rea2::scopeCache>(rea2::Json("root", aInput->scope()->data<QString>("root"),
                                                                             "config", aInput->scope()->data<QJsonObject>("config"))), true)->asyncCall("findTaskInfo");
     if (info->data() == aInput->data())
         return nullptr;
     return info;
 }
 
-std::shared_ptr<dpstMode> dpstAnnoHandler::getMode(const QString& aID, rea::stream<QString>* aInput){
+std::shared_ptr<dpstMode> dpstAnnoHandler::getMode(const QString& aID, rea2::stream<QString>* aInput){
     if (!m_mode.contains(aID)){
         auto tsk = getTaskInfo(aID, aInput);
         switchMode(aID, tsk ? tsk->scope()->data<QString>("mode") : "anno");
@@ -43,8 +43,8 @@ std::shared_ptr<dpstMode> dpstAnnoHandler::getMode(const QString& aID, rea::stre
 dpstAnnoHandler::dpstAnnoHandler(){
     //m_mode = std::make_shared<annoMode>(this);
 
-    rea::pipeline::instance()->find("openWorkFile")
-    ->nextF<QString>([this](rea::stream<QString>* aInput){
+    rea2::pipeline::instance()->find("openWorkFile")
+    ->nextF<QString>([this](rea2::stream<QString>* aInput){
         auto pth = aInput->data();
         auto rt0 = aInput->scope()->data<QString>("root");
         auto cfg0 = aInput->scope()->data<QJsonObject>("config");
@@ -78,8 +78,8 @@ dpstAnnoHandler::dpstAnnoHandler(){
         auto scp = aInput->scope();
         auto objs = getMode(id, aInput)->getAnnos(id, mdl, aInput);
 
-        auto mp = rea::in(QJsonArray(), "", nullptr, true)->asyncCall("c++_getViewMap")->data();
-        auto invisible = rea::in(QJsonObject(), "", nullptr, true)->asyncCall("c++_getLabelVisible")->data();
+        auto mp = rea2::in(QJsonArray(), "", nullptr, true)->asyncCall("c++_getViewMap")->data();
+        auto invisible = rea2::in(QJsonObject(), "", nullptr, true)->asyncCall("c++_getLabelVisible")->data();
         QSet<int> occupied;
         progressRead prg;
         prg.start(pths.size());
@@ -104,9 +104,9 @@ dpstAnnoHandler::dpstAnnoHandler(){
             auto w = imgs.size() ? imgs.begin()->width() : 100,
                     h = imgs.size() ? imgs.begin()->height() : 100;
 
-            auto objects = rea::Json(objs, "img_0", rea::Json(
+            auto objects = rea2::Json(objs, "img_0", rea2::Json(
                                          "path", pth,
-                                         "range", rea::JArray(0, 0, w, h),
+                                         "range", rea2::JArray(0, 0, w, h),
                                          "type", "image",
                                          "caption", lbls[i].toString()
                                          ));
@@ -117,19 +117,19 @@ dpstAnnoHandler::dpstAnnoHandler(){
                     objs.insert(j, obj);
             }
 
-            auto anno_mdl = rea::Json("width", w,
+            auto anno_mdl = rea2::Json("width", w,
                                       "height", h,
                                       "max_ratio", 100,
                                       "min_ratio", 0.01,
-                                      "text", rea::Json(
+                                      "text", rea2::Json(
                                           "visible", true,
-                                          "size", rea::JArray(50, 30),
+                                          "size", rea2::JArray(50, 30),
                                           "location", "top"
                                           ),
                                       "objects", objs);
             aInput->outs<QJsonArray>(QJsonArray(), "updateQSGAttr_reagrid" + QString::number(int(idx)) + "_ide_dpst_anno")
                     ->scope(true)
-                    ->cache<QJsonObject>("model", rea::Json(anno_mdl, "id", pth))
+                    ->cache<QJsonObject>("model", rea2::Json(anno_mdl, "id", pth))
                     ->cache<QHash<QString, QImage>>("image", imgs);
         }
         prg.report();
@@ -145,41 +145,41 @@ dpstAnnoHandler::dpstAnnoHandler(){
         }*/
     }, getSuffix());
 
-    rea::pipeline::instance()->find("saveWorkFile")
-    ->nextF<QString>([this](rea::stream<QString>* aInput){
+    rea2::pipeline::instance()->find("saveWorkFile")
+    ->nextF<QString>([this](rea2::stream<QString>* aInput){
         auto pth = aInput->data();
         auto rt = aInput->scope()->data<QString>("root");
         auto cfg = aInput->scope()->data<QJsonObject>("config");
         auto id = calcID(pth, rt, cfg);
         if (aInput->scope()->data<QString>("viewtype") == "text"){
-            auto dt = rea::in<QString>("", "", nullptr, true)->asyncCall("getQuillText_" + aInput->scope()->data<QString>("name") + "_ide_text", false)->data();
+            auto dt = rea2::in<QString>("", "", nullptr, true)->asyncCall("getQuillText_" + aInput->scope()->data<QString>("name") + "_ide_text", false)->data();
             m_data.insert(id, QJsonDocument::fromJson(dt.toUtf8()).object());
             if (writeByteArray(rt, pth, cfg, dt.toUtf8())->data())
                 aInput->outs(aInput->data(), "workFileSaved");
         }else if (aInput->scope()->data<QString>("viewtype") == "dpst_anno"){
             getMode(id, aInput)->saveWorkFile(id, aInput);
         }else{
-            aInput->outs(rea::Json("title", "warning", "text", "not supported yet!"), "c++_popMessage");
+            aInput->outs(rea2::Json("title", "warning", "text", "not supported yet!"), "c++_popMessage");
         }
-    }, getSuffix(), rea::Json("thread", 30));
+    }, getSuffix(), rea2::Json("thread", 30));
 
-    rea::pipeline::instance()->find("clientOnline")->nextF<QString>([this](rea::stream<QString>* aInput){
+    rea2::pipeline::instance()->find("clientOnline")->nextF<QString>([this](rea2::stream<QString>* aInput){
         auto scp = aInput->scope();
         m_job_path = QFileInfo(scp->data<QString>("path")).path() + "/";
         m_job_root = scp->data<QString>("root");
         m_job_config = scp->data<QJsonObject>("config");
         aInput->out();
-    }, "", rea::Json("name", "qml_clientOnline",
+    }, "", rea2::Json("name", "qml_clientOnline",
                      "external", "qml"));
 }
 
-QJsonObject annoMode::getAnnos(const QString& aID, const QJsonObject& aModel, rea::stream<QString>* aInput){
+QJsonObject annoMode::getAnnos(const QString& aID, const QJsonObject& aModel, rea2::stream<QString>* aInput){
     auto ret = aModel.value("objects").toObject();
     if (m_handler->m_job_path == "")
         return ret;
     auto tsk_info = m_handler->getTaskInfo(aID, aInput);
     if (tsk_info){
-        auto sel_jobs = rea::pipeline::input(QJsonArray(), "", nullptr, true)
+        auto sel_jobs = rea2::pipeline::input(QJsonArray(), "", nullptr, true)
                 ->asyncCall("c++_joblist_reagrid" + QString::number(tsk_info->scope()->data<int>("index")) + "_ide_dpst_train_listViewSelected")->data();
         QFileInfo tsk_file = (tsk_info->data());
         if (sel_jobs.size()){
@@ -192,11 +192,11 @@ QJsonObject annoMode::getAnnos(const QString& aID, const QJsonObject& aModel, re
     return ret;
 }
 
-void annoMode::saveWorkFile(const QString& aID, rea::stream<QString>* aInput){
+void annoMode::saveWorkFile(const QString& aID, rea2::stream<QString>* aInput){
     auto pth = aInput->data();
     auto rt = aInput->scope()->data<QString>("root");
     auto cfg = aInput->scope()->data<QJsonObject>("config");
-    auto dt = rea::in<rea::qsgModel*>(nullptr, "", nullptr, true)->asyncCall("getQSGModel_" + aInput->scope()->data<QString>("name") + "_ide_dpst_anno", false)->data();
+    auto dt = rea2::in<rea2::qsgModel*>(nullptr, "", nullptr, true)->asyncCall("getQSGModel_" + aInput->scope()->data<QString>("name") + "_ide_dpst_anno", false)->data();
     auto mdl = m_handler->m_data.value(aID);
     auto objs = dt->value("objects").toObject();
     auto img = objs.value("img_0").toObject();
@@ -219,7 +219,7 @@ void annoMode::saveWorkFile(const QString& aID, rea::stream<QString>* aInput){
         aInput->outs(aInput->data(), "workFileSaved");
 }
 
-QJsonObject roiMode::getAnnos(const QString& aID, const QJsonObject&, rea::stream<QString>* aInput){
+QJsonObject roiMode::getAnnos(const QString& aID, const QJsonObject&, rea2::stream<QString>* aInput){
     auto tsk_info = m_handler->getTaskInfo(aID, aInput);
     if (!tsk_info)
         return QJsonObject();
@@ -237,14 +237,14 @@ QJsonObject roiMode::getAnnos(const QString& aID, const QJsonObject&, rea::strea
     }
 }
 
-void roiMode::saveWorkFile(const QString& aID, rea::stream<QString>* aInput){
+void roiMode::saveWorkFile(const QString& aID, rea2::stream<QString>* aInput){
     auto tsk_info = m_handler->getTaskInfo(aID, aInput);
     if (!tsk_info)
         return;
     QString tsk_pth = tsk_info->data(), tsk_rt = tsk_info->scope()->data<QString>("root");
     QJsonObject tsk_cfg = tsk_info->scope()->data<QJsonObject>("config");
 
-    auto dt = rea::in<rea::qsgModel*>(nullptr, "", nullptr, true)->asyncCall("getQSGModel_" + aInput->scope()->data<QString>("name") + "_ide_dpst_anno", false)->data();
+    auto dt = rea2::in<rea2::qsgModel*>(nullptr, "", nullptr, true)->asyncCall("getQSGModel_" + aInput->scope()->data<QString>("name") + "_ide_dpst_anno", false)->data();
     auto objs = dt->value("objects").toObject();
     objs.remove("img_0");
 
@@ -252,46 +252,46 @@ void roiMode::saveWorkFile(const QString& aID, rea::stream<QString>* aInput){
     if (!tsk.value("local_roi").toBool()){
         tsk.insert("roi", objs);
         if (!m_handler->writeJsonObject(tsk_rt, tsk_pth, tsk_cfg, tsk)->data())
-            aInput->outs(rea::Json("title", "warning", "text", "save roi failed!"), "c++_popMessage");
+            aInput->outs(rea2::Json("title", "warning", "text", "save roi failed!"), "c++_popMessage");
     }else{
         QFileInfo info(tsk_pth);
         auto pth = info.path() + "/" + info.baseName() + "_task/" + QFileInfo(aInput->data()).baseName() + ".json";
         auto abs = m_handler->readStorage(tsk_rt, pth, tsk_cfg, "JsonObject")->scope()->data<QJsonObject>("data");
         abs.insert("roi", objs);
         if (!m_handler->writeJsonObject(tsk_rt, pth, tsk_cfg, abs))
-            aInput->outs(rea::Json("title", "warning", "text", "save roi failed!"), "c++_popMessage");
+            aInput->outs(rea2::Json("title", "warning", "text", "save roi failed!"), "c++_popMessage");
     }
 }
 
-class qsgPluginCustomSelect : public rea::qsgBoardPlugin{
+class qsgPluginCustomSelect : public rea2::qsgBoardPlugin{
 private:
-    rea::pipe0* m_can_be_select;
-    rea::pipe0* m_update_qsgselects;
-    rea::pipe0* m_forbid_transform_image;
-    std::shared_ptr<rea::qsgBoardPlugin> m_origin_select;
+    rea2::pipe0* m_can_be_select;
+    rea2::pipe0* m_update_qsgselects;
+    rea2::pipe0* m_forbid_transform_image;
+    std::shared_ptr<rea2::qsgBoardPlugin> m_origin_select;
 public:
-    qsgPluginCustomSelect(const std::shared_ptr<rea::qsgBoardPlugin> aSelect, const QJsonObject& aConfig) : qsgBoardPlugin(aConfig){
+    qsgPluginCustomSelect(const std::shared_ptr<rea2::qsgBoardPlugin> aSelect, const QJsonObject& aConfig) : qsgBoardPlugin(aConfig){
         m_origin_select = aSelect;
     }
     ~qsgPluginCustomSelect() override{
-        rea::pipeline::instance()->find("qsgObjectCanBeSelected_" + getParentName())->removeAspect(rea::pipe0::AspectType::AspectAfter, m_can_be_select->actName());
-        rea::pipeline::instance()->remove(m_can_be_select->actName());
-        rea::pipeline::instance()->find("updateSelectedMask_" + getParentName())->removeNext(m_update_qsgselects->actName(), true, false);
-        rea::pipeline::instance()->find("updateQSGAttr_" + getParentName())->removeAspect(rea::pipe0::AspectType::AspectBefore, m_forbid_transform_image->actName());
-        rea::pipeline::instance()->remove(m_forbid_transform_image->actName());
+        rea2::pipeline::instance()->find("qsgObjectCanBeSelected_" + getParentName())->removeAspect(rea2::pipe0::AspectType::AspectAfter, m_can_be_select->actName());
+        rea2::pipeline::instance()->remove(m_can_be_select->actName());
+        rea2::pipeline::instance()->find("updateSelectedMask_" + getParentName())->removeNext(m_update_qsgselects->actName(), true, false);
+        rea2::pipeline::instance()->find("updateQSGAttr_" + getParentName())->removeAspect(rea2::pipe0::AspectType::AspectBefore, m_forbid_transform_image->actName());
+        rea2::pipeline::instance()->remove(m_forbid_transform_image->actName());
     }
 protected:
-    QString getName(rea::qsgBoard* aParent = nullptr) override{
+    QString getName(rea2::qsgBoard* aParent = nullptr) override{
         auto ret = qsgBoardPlugin::getName(aParent);
         m_origin_select->getName(aParent);
 
-        m_can_be_select = rea::pipeline::instance()->add<bool>([](rea::stream<bool>* aInput){
-            auto tgt = aInput->scope()->data<rea::qsgObject*>("target");
+        m_can_be_select = rea2::pipeline::instance()->add<bool>([](rea2::stream<bool>* aInput){
+            auto tgt = aInput->scope()->data<rea2::qsgObject*>("target");
             aInput->setData(tgt->value("tag") != "result");
             aInput->out();
-        }, rea::Json("after", "qsgObjectCanBeSelected_" + getParentName()));
+        }, rea2::Json("after", "qsgObjectCanBeSelected_" + getParentName()));
 
-        m_update_qsgselects = rea::pipeline::instance()->find("updateSelectedMask_" + getParentName())->nextF<rea::pointList>([this](rea::stream<rea::pointList>* aInput){
+        m_update_qsgselects = rea2::pipeline::instance()->find("updateSelectedMask_" + getParentName())->nextF<rea2::pointList>([this](rea2::stream<rea2::pointList>* aInput){
             auto sel_objs = aInput->scope()->data<QSet<QString>>("selects");
             QJsonObject sels;
             auto objs = getQSGModel()->getQSGObjects();
@@ -305,11 +305,11 @@ protected:
                 tl = getTransNode()->matrix().map(pts[0]);
                 br = getTransNode()->matrix().map(pts[2]);
             }
-            aInput->outs<QJsonObject>(sel_objs.size() > 0 ? rea::Json("bound", rea::JArray(tl.x(), tl.y(), br.x(), br.y()), "shapes", sels) : QJsonObject(),
+            aInput->outs<QJsonObject>(sel_objs.size() > 0 ? rea2::Json("bound", rea2::JArray(tl.x(), tl.y(), br.x(), br.y()), "shapes", sels) : QJsonObject(),
                                       "updateQSGSelects_" + getParentName());
         });
 
-        m_forbid_transform_image = rea::pipeline::instance()->add<QJsonArray>([](rea::stream<QJsonArray>* aInput){
+        m_forbid_transform_image = rea2::pipeline::instance()->add<QJsonArray>([](rea2::stream<QJsonArray>* aInput){
             auto mdys = aInput->data();
             for (auto i : mdys){
                 auto mdy = i.toObject();
@@ -317,7 +317,7 @@ protected:
                     return;
             }
             aInput->out();
-        }, rea::Json("before", "updateQSGAttr_" + getParentName()));
+        }, rea2::Json("before", "updateQSGAttr_" + getParentName()));
 
         return ret;
     }
@@ -325,7 +325,7 @@ protected:
     void beforeDestroy() override{
         qsgBoardPlugin::beforeDestroy();
         m_origin_select->beforeDestroy();
-        rea::pipeline::instance()->run<QJsonObject>("updateQSGSelects_" + getParentName(), QJsonObject(), "selObject");
+        rea2::pipeline::instance()->run<QJsonObject>("updateQSGSelects_" + getParentName(), QJsonObject(), "selObject");
     }
 
     void keyPressEvent(QKeyEvent *event) override{
@@ -351,17 +351,17 @@ protected:
     }
 };
 
-static rea::regPip<QJsonObject, rea::pipePartial> plugin_select2([](rea::stream<QJsonObject>* aInput){
-    auto plg = std::make_shared<qsgPluginCustomSelect>(aInput->scope()->data<std::shared_ptr<rea::qsgBoardPlugin>>("result"), aInput->data());
-    aInput->scope()->cache<std::shared_ptr<rea::qsgBoardPlugin>>("result", plg);
+static rea2::regPip<QJsonObject, rea2::pipePartial> plugin_select2([](rea2::stream<QJsonObject>* aInput){
+    auto plg = std::make_shared<qsgPluginCustomSelect>(aInput->scope()->data<std::shared_ptr<rea2::qsgBoardPlugin>>("result"), aInput->data());
+    aInput->scope()->cache<std::shared_ptr<rea2::qsgBoardPlugin>>("result", plg);
     aInput->out();
-}, rea::Json("name", "create_qsgboardplugin_selectc", "befored", "create_qsgboardplugin_select"));
+}, rea2::Json("name", "create_qsgboardplugin_selectc", "befored", "create_qsgboardplugin_select"));
 
-const auto after_createQSGBoardpluginDrawRect = rea::Json("after", "create_qsgboardplugin_drawrect");
-const auto after_createQSGBoardpluginDrawEllipse = rea::Json("after", "create_qsgboardplugin_drawellipse");
-const auto after_createQSGBoardpluginDrawCircle = rea::Json("after", "create_qsgboardplugin_drawcircle");
-const auto after_CreateQSGBoardpluginDrawPoly = rea::Json("after", "create_qsgboardplugin_drawpoly");
-const auto after_CreateQSGBoardpluginDrawFree = rea::Json("after", "create_qsgboardplugin_drawfree");
+const auto after_createQSGBoardpluginDrawRect = rea2::Json("after", "create_qsgboardplugin_drawrect");
+const auto after_createQSGBoardpluginDrawEllipse = rea2::Json("after", "create_qsgboardplugin_drawellipse");
+const auto after_createQSGBoardpluginDrawCircle = rea2::Json("after", "create_qsgboardplugin_drawcircle");
+const auto after_CreateQSGBoardpluginDrawPoly = rea2::Json("after", "create_qsgboardplugin_drawpoly");
+const auto after_CreateQSGBoardpluginDrawFree = rea2::Json("after", "create_qsgboardplugin_drawfree");
 
 template <typename T>
 class drawTraits{
@@ -377,24 +377,24 @@ public:
 };
 
 template <typename DrawTraits>
-class qsgPluginCustomDrawAnno : public rea::qsgBoardPlugin{
+class qsgPluginCustomDrawAnno : public rea2::qsgBoardPlugin{
 private:
-    rea::pipe0* m_monitor;
+    rea2::pipe0* m_monitor;
 protected:
-    std::shared_ptr<rea::qsgBoardPlugin> m_origin_draw;
+    std::shared_ptr<rea2::qsgBoardPlugin> m_origin_draw;
 public:
-    qsgPluginCustomDrawAnno(std::shared_ptr<rea::qsgBoardPlugin> aOriginDraw, const QJsonObject& aConfig) : qsgBoardPlugin(aConfig){
+    qsgPluginCustomDrawAnno(std::shared_ptr<rea2::qsgBoardPlugin> aOriginDraw, const QJsonObject& aConfig) : qsgBoardPlugin(aConfig){
         m_origin_draw = aOriginDraw;
     }
     ~qsgPluginCustomDrawAnno() override{
-        //rea::pipeline::instance()->find("updateQSGAttr_" + getParentName())->removeAspect(rea::pipe0::AspectAfter, m_monitor->actName());
-        rea::pipeline::instance()->find("QSGAttrUpdated_" + getParentName())->removeNext(m_monitor->actName(), true, false);
+        //rea2::pipeline::instance()->find("updateQSGAttr_" + getParentName())->removeAspect(rea2::pipe0::AspectAfter, m_monitor->actName());
+        rea2::pipeline::instance()->find("QSGAttrUpdated_" + getParentName())->removeNext(m_monitor->actName(), true, false);
     }
 protected:
-    QString getName(rea::qsgBoard* aParent = nullptr) override {
+    QString getName(rea2::qsgBoard* aParent = nullptr) override {
         qsgBoardPlugin::getName(aParent);
         auto ret = m_origin_draw->getName(aParent);
-        m_monitor = rea::pipeline::instance()->find("QSGAttrUpdated_" + getParentName())->template nextF<QJsonArray>([this](rea::stream<QJsonArray>* aInput){
+        m_monitor = rea2::pipeline::instance()->find("QSGAttrUpdated_" + getParentName())->template nextF<QJsonArray>([this](rea2::stream<QJsonArray>* aInput){
             QJsonObject shps;
             auto dt = aInput->data();
             for (auto i : dt){
@@ -417,8 +417,8 @@ protected:
                         br = QPointF(std::max(br.x(), tmp_br.x()), std::max(br.y(), tmp_br.y()));
                     }
                 }
-                rea::pipeline::instance()->run<QJsonObject>("updateQSGSelects_" + getParentName(),
-                                                rea::Json("bound", rea::JArray(tl.x(), tl.y(), br.x(), br.y()),
+                rea2::pipeline::instance()->run<QJsonObject>("updateQSGSelects_" + getParentName(),
+                                                rea2::Json("bound", rea2::JArray(tl.x(), tl.y(), br.x(), br.y()),
                                                           "shapes", shps,
                                                           "show_menu", true),
                                                 DrawTraits().tag());
@@ -427,7 +427,7 @@ protected:
         return ret;
     }
     void beforeDestroy() override{
-        rea::pipeline::instance()->run<QJsonObject>("updateQSGSelects_" + getParentName(), QJsonObject(), DrawTraits().tag());
+        rea2::pipeline::instance()->run<QJsonObject>("updateQSGSelects_" + getParentName(), QJsonObject(), DrawTraits().tag());
         m_origin_draw->beforeDestroy();
     }
     void wheelEvent(QWheelEvent *event) override{
@@ -449,50 +449,50 @@ protected:
     }
     void mousePressEvent(QMouseEvent *event) override{
         m_origin_draw->mousePressEvent(event);
-        rea::pipeline::instance()->run<QJsonObject>("updateQSGSelects_" + getParentName(), QJsonObject(), DrawTraits().tag());
+        rea2::pipeline::instance()->run<QJsonObject>("updateQSGSelects_" + getParentName(), QJsonObject(), DrawTraits().tag());
     }
 };
 
-class drawRect : public drawTraits<rea::polyObject>{
+class drawRect : public drawTraits<rea2::polyObject>{
 public:
     QString tag() override{
         return "drawRect";
     }
 };
 
-static rea::regPip<QJsonObject, rea::pipePartial> draw_rect_anno([](rea::stream<QJsonObject>* aInput){
-    auto plg = std::make_shared<qsgPluginCustomDrawAnno<drawRect>>(aInput->scope()->data<std::shared_ptr<rea::qsgBoardPlugin>>("result"), aInput->data());
-    aInput->scope()->cache<std::shared_ptr<rea::qsgBoardPlugin>>("result", plg);
+static rea2::regPip<QJsonObject, rea2::pipePartial> draw_rect_anno([](rea2::stream<QJsonObject>* aInput){
+    auto plg = std::make_shared<qsgPluginCustomDrawAnno<drawRect>>(aInput->scope()->data<std::shared_ptr<rea2::qsgBoardPlugin>>("result"), aInput->data());
+    aInput->scope()->cache<std::shared_ptr<rea2::qsgBoardPlugin>>("result", plg);
     aInput->out();
 }, after_createQSGBoardpluginDrawRect);
 
-class drawEllipse : public drawTraits<rea::ellipseObject>{
+class drawEllipse : public drawTraits<rea2::ellipseObject>{
 public:
     QString tag() override{
         return "drawEllipse";
     }
 };
 
-static rea::regPip<QJsonObject, rea::pipePartial> draw_ellipse_anno([](rea::stream<QJsonObject>* aInput){
-    auto plg = std::make_shared<qsgPluginCustomDrawAnno<drawEllipse>>(aInput->scope()->data<std::shared_ptr<rea::qsgBoardPlugin>>("result"), aInput->data());
-    aInput->scope()->cache<std::shared_ptr<rea::qsgBoardPlugin>>("result", plg);
+static rea2::regPip<QJsonObject, rea2::pipePartial> draw_ellipse_anno([](rea2::stream<QJsonObject>* aInput){
+    auto plg = std::make_shared<qsgPluginCustomDrawAnno<drawEllipse>>(aInput->scope()->data<std::shared_ptr<rea2::qsgBoardPlugin>>("result"), aInput->data());
+    aInput->scope()->cache<std::shared_ptr<rea2::qsgBoardPlugin>>("result", plg);
     aInput->out();
 }, after_createQSGBoardpluginDrawEllipse);
 
-class drawCircle : public drawTraits<rea::ellipseObject>{
+class drawCircle : public drawTraits<rea2::ellipseObject>{
 public:
     QString tag() override{
         return "drawCircle";
     }
 };
 
-static rea::regPip<QJsonObject, rea::pipePartial> draw_circle_anno([](rea::stream<QJsonObject>* aInput){
-    auto plg = std::make_shared<qsgPluginCustomDrawAnno<drawCircle>>(aInput->scope()->data<std::shared_ptr<rea::qsgBoardPlugin>>("result"), aInput->data());
-    aInput->scope()->cache<std::shared_ptr<rea::qsgBoardPlugin>>("result", plg);
+static rea2::regPip<QJsonObject, rea2::pipePartial> draw_circle_anno([](rea2::stream<QJsonObject>* aInput){
+    auto plg = std::make_shared<qsgPluginCustomDrawAnno<drawCircle>>(aInput->scope()->data<std::shared_ptr<rea2::qsgBoardPlugin>>("result"), aInput->data());
+    aInput->scope()->cache<std::shared_ptr<rea2::qsgBoardPlugin>>("result", plg);
     aInput->out();
 }, after_createQSGBoardpluginDrawCircle);
 
-class drawPolies : public drawTraits<rea::polyObject>{
+class drawPolies : public drawTraits<rea2::polyObject>{
 public:
     virtual QString completed() = 0;
 };
@@ -510,18 +510,18 @@ public:
 template <typename DrawPolies>
 class qsgPluginCustomDrawPolyAnno : public qsgPluginCustomDrawAnno<DrawPolies>{
 public:
-    qsgPluginCustomDrawPolyAnno(std::shared_ptr<rea::qsgBoardPlugin> aOriginDraw, const QJsonObject& aConfig) : qsgPluginCustomDrawAnno<DrawPolies> (aOriginDraw, aConfig){
+    qsgPluginCustomDrawPolyAnno(std::shared_ptr<rea2::qsgBoardPlugin> aOriginDraw, const QJsonObject& aConfig) : qsgPluginCustomDrawAnno<DrawPolies> (aOriginDraw, aConfig){
 
     }
     ~qsgPluginCustomDrawPolyAnno() override{
-      //  rea::pipeline::instance()->find(DrawPolies().completed() + getParentName(), false)->removeNext(m_completed->actName());
-      //  rea::pipeline::instance()->remove(m_completed->actName());
+      //  rea2::pipeline::instance()->find(DrawPolies().completed() + getParentName(), false)->removeNext(m_completed->actName());
+      //  rea2::pipeline::instance()->remove(m_completed->actName());
     }
 protected:
-    QString getName(rea::qsgBoard* aParent = nullptr) override {
+    QString getName(rea2::qsgBoard* aParent = nullptr) override {
         auto ret = qsgPluginCustomDrawAnno<DrawPolies>::getName(aParent);
-       /* m_completed = rea::pipeline::instance()->find(DrawPolies().completed() + getParentName())
-                          ->template nextF<QJsonObject>([this](rea::stream<QJsonObject>* aInput){
+       /* m_completed = rea2::pipeline::instance()->find(DrawPolies().completed() + getParentName())
+                          ->template nextF<QJsonObject>([this](rea2::stream<QJsonObject>* aInput){
                               if (!aInput->data().empty()){
                                   updateSelectsGUI(aInput->data());
                               }
@@ -533,9 +533,9 @@ protected:
     }
 };
 
-static rea::regPip<QJsonObject, rea::pipePartial> draw_poly_anno([](rea::stream<QJsonObject>* aInput){
-    auto plg = std::make_shared<qsgPluginCustomDrawPolyAnno<drawPoly>>(aInput->scope()->data<std::shared_ptr<rea::qsgBoardPlugin>>("result"), aInput->data());
-    aInput->scope()->cache<std::shared_ptr<rea::qsgBoardPlugin>>("result", plg);
+static rea2::regPip<QJsonObject, rea2::pipePartial> draw_poly_anno([](rea2::stream<QJsonObject>* aInput){
+    auto plg = std::make_shared<qsgPluginCustomDrawPolyAnno<drawPoly>>(aInput->scope()->data<std::shared_ptr<rea2::qsgBoardPlugin>>("result"), aInput->data());
+    aInput->scope()->cache<std::shared_ptr<rea2::qsgBoardPlugin>>("result", plg);
     aInput->out();
 }, after_CreateQSGBoardpluginDrawPoly);
 
@@ -549,8 +549,8 @@ public:
     }
 };
 
-static rea::regPip<QJsonObject, rea::pipePartial> draw_free_anno([](rea::stream<QJsonObject>* aInput){
-    auto plg = std::make_shared<qsgPluginCustomDrawPolyAnno<drawFree>>(aInput->scope()->data<std::shared_ptr<rea::qsgBoardPlugin>>("result"), aInput->data());
-    aInput->scope()->cache<std::shared_ptr<rea::qsgBoardPlugin>>("result", plg);
+static rea2::regPip<QJsonObject, rea2::pipePartial> draw_free_anno([](rea2::stream<QJsonObject>* aInput){
+    auto plg = std::make_shared<qsgPluginCustomDrawPolyAnno<drawFree>>(aInput->scope()->data<std::shared_ptr<rea2::qsgBoardPlugin>>("result"), aInput->data());
+    aInput->scope()->cache<std::shared_ptr<rea2::qsgBoardPlugin>>("result", plg);
     aInput->out();
 }, after_CreateQSGBoardpluginDrawFree);

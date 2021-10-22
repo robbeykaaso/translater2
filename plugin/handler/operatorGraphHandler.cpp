@@ -17,7 +17,7 @@ private:
         link(const QString& aStart, const QString& aEnd, const QString& aID = "") : start(aStart), end(aEnd){
             id = aID;
             if (id == "")
-                id = rea::generateUUID();
+                id = rea2::generateUUID();
         }
         QString start, end, id;
         bool deleted = false;
@@ -41,82 +41,82 @@ private:
     };
     QHash<QString, model> m_gui_models;
     void service(){
-        rea::pipeline::instance()->add<double>([this](rea::stream<double>* aInput){
+        rea2::pipeline::instance()->add<double>([this](rea2::stream<double>* aInput){
             auto scp = aInput->scope();
             auto cfg = scp->data<QJsonObject>("config");
             auto rt = scp->data<QString>("root");
             auto pth = scp->data<QString>("path");
             auto id = handler::calcID(pth, rt, cfg);
             auto opts = m_data.value(id).value("operators").toObject();
-            auto graph = std::make_shared<rea::operatorGraph>(id);
+            auto graph = std::make_shared<rea2::operatorGraph>(id);
             graph->build(opts);
             graph->run();
-        }, rea::Json("name", "runOperatorGraph"));
+        }, rea2::Json("name", "runOperatorGraph"));
 
-        rea::pipeline::instance()->add<QString>([this](rea::stream<QString>* aInput){
+        rea2::pipeline::instance()->add<QString>([this](rea2::stream<QString>* aInput){
             auto opt = aInput->data();
             auto prgs = aInput->scope()->data<double>("progress");
             auto id = aInput->scope()->data<QString>("id");
-            auto mdl = rea::tryFind(&m_gui_models, id);
-            aInput->outs(rea::JArray(rea::Json("obj", opt,
-                                               "key", rea::JArray("color"),
+            auto mdl = rea2::tryFind(&m_gui_models, id);
+            aInput->outs(rea2::JArray(rea2::Json("obj", opt,
+                                               "key", rea2::JArray("color"),
                                                "val", prgs < 100 ? "green" : "red",
                                                "id", id)),
                          "updateQSGAttr_reagrid" + QString::number(mdl->index) + "_ide_optgph");
-        }, rea::Json("name", "operatorGraphRunning"));
+        }, rea2::Json("name", "operatorGraphRunning"));
 
-        rea::pipeline::instance()->add<QJsonObject>([this](rea::stream<QJsonObject>* aInput){
+        rea2::pipeline::instance()->add<QJsonObject>([this](rea2::stream<QJsonObject>* aInput){
             auto dt = aInput->data();
             auto id = dt.value("id").toString();
             auto opt = dt.value("opt").toString();
             auto ct = QPointF(dt.value("x").toDouble(), dt.value("y").toDouble());
             auto brd = dt.value("board").toString();
-            auto mdl = rea::tryFind(&m_gui_models, id);
-            auto opt_mdl = rea::tryFind(&mdl->operators, opt);
+            auto mdl = rea2::tryFind(&m_gui_models, id);
+            auto opt_mdl = rea2::tryFind(&mdl->operators, opt);
             opt_mdl->center = ct;
             for (auto i : opt_mdl->links)
                 if (!i->deleted){
                     QPointF pt1, pt2;
                     if (i->start == opt){
                         pt1 = ct;
-                        pt2 = rea::tryFind(&mdl->operators, i->end)->center;
+                        pt2 = rea2::tryFind(&mdl->operators, i->end)->center;
                     }else{
-                        pt1 = rea::tryFind(&mdl->operators, i->start)->center;
+                        pt1 = rea2::tryFind(&mdl->operators, i->start)->center;
                         pt2 = ct;
                     }
-                    aInput->outs(rea::JArray(rea::Json("obj", i->id,
-                                                       "key", rea::JArray("points"),
-                                                       "val", rea::JArray(QJsonArray(), rea::JArray(pt1.x(), pt1.y(), pt2.x(), pt2.y())),
+                    aInput->outs(rea2::JArray(rea2::Json("obj", i->id,
+                                                       "key", rea2::JArray("points"),
+                                                       "val", rea2::JArray(QJsonArray(), rea2::JArray(pt1.x(), pt1.y(), pt2.x(), pt2.y())),
                                                        "id", id)), "updateQSGAttr_" + brd);
                 }
 
-        }, rea::Json("name", "operatorPosChanged"));
+        }, rea2::Json("name", "operatorPosChanged"));
 
-        rea::pipeline::instance()->add<QJsonObject>([this](rea::stream<QJsonObject>* aInput){
+        rea2::pipeline::instance()->add<QJsonObject>([this](rea2::stream<QJsonObject>* aInput){
             auto dt = aInput->data();
             auto opt = dt.value("opt").toString();
             auto id = dt.value("id").toString();
-            auto mdl = rea::tryFind(&m_gui_models, id);
+            auto mdl = rea2::tryFind(&m_gui_models, id);
             if (mdl->links.contains(opt)){
                 if (dt.value("cmd").toBool())
                     mdl->links.value(opt)->deleted = true;
             }else{
-                auto opt_mdl = rea::tryFind(&mdl->operators, opt);
+                auto opt_mdl = rea2::tryFind(&mdl->operators, opt);
                 opt_mdl->deleted = true;
                 auto brd = dt.value("board").toString();
                 for (auto i : opt_mdl->links)
-                    aInput->outs(rea::JArray(rea::Json("tar", i->id,
-                                                       "key", rea::JArray("objects"),
+                    aInput->outs(rea2::JArray(rea2::Json("tar", i->id,
+                                                       "key", rea2::JArray("objects"),
                                                        "type", "del",
                                                        "id", id)), "updateQSGAttr_" + brd);
             }
-        }, rea::Json("name", "shapeDeleted"));
+        }, rea2::Json("name", "shapeDeleted"));
 
-        rea::pipeline::instance()->add<QJsonObject>([this](rea::stream<QJsonObject>* aInput){
+        rea2::pipeline::instance()->add<QJsonObject>([this](rea2::stream<QJsonObject>* aInput){
             auto dt = aInput->data();
             auto opt = dt.value("opt").toString();
             auto id = dt.value("id").toString();
-            auto mdl = rea::tryFind(&m_gui_models, id);
+            auto mdl = rea2::tryFind(&m_gui_models, id);
             if (dt.value("tag") == "link"){
                 if (mdl->links.contains(opt)){
                     if (dt.value("cmd").toBool())
@@ -126,55 +126,55 @@ private:
                         auto st = dt.value("start").toString(), ed = dt.value("end").toString();
                         auto lnk = std::make_shared<link>(st, ed, opt);
                         mdl->links.insert(lnk->id, lnk);
-                        rea::tryFind(&mdl->operators, st)->links.push_back(lnk);
-                        rea::tryFind(&mdl->operators, ed)->links.push_back(lnk);
+                        rea2::tryFind(&mdl->operators, st)->links.push_back(lnk);
+                        rea2::tryFind(&mdl->operators, ed)->links.push_back(lnk);
                     }
                 }
             }else{
-                auto opt_mdl = rea::tryFind(&mdl->operators, opt);
+                auto opt_mdl = rea2::tryFind(&mdl->operators, opt);
                 opt_mdl->center = QPointF(dt.value("x").toDouble(), dt.value("y").toDouble());
                 opt_mdl->type = dt.value("caption").toString();
                 opt_mdl->deleted = false;
                 auto id = dt.value("id").toString();
                 auto brd = dt.value("board").toString();
                 for (auto i : opt_mdl->links){
-                    auto st_opt = rea::tryFind(&mdl->operators, i->start),
-                            ed_opt = rea::tryFind(&mdl->operators, i->end);
+                    auto st_opt = rea2::tryFind(&mdl->operators, i->start),
+                            ed_opt = rea2::tryFind(&mdl->operators, i->end);
                     if (!i->deleted && !st_opt->deleted && !ed_opt->deleted){
                         auto st = st_opt->center, ed = ed_opt->center;
-                        aInput->outs(rea::JArray(rea::Json("tar", i->id,
-                                                           "key", rea::JArray("objects"),
+                        aInput->outs(rea2::JArray(rea2::Json("tar", i->id,
+                                                           "key", rea2::JArray("objects"),
                                                            "type", "add",
-                                                           "val", rea::Json(
+                                                           "val", rea2::Json(
                                                                "type", "link",
                                                                "tag", "link",
-                                                               "points", rea::JArray(QJsonArray(), rea::JArray(st.x(), st.y(), ed.x(), ed.y())),
+                                                               "points", rea2::JArray(QJsonArray(), rea2::JArray(st.x(), st.y(), ed.x(), ed.y())),
                                                                "color", "gray",
-                                                               "arrow", rea::Json("visible", true)
+                                                               "arrow", rea2::Json("visible", true)
                                                                ),
                                                            "id", id)), "updateQSGAttr_" + brd);
                     }
                 }
             }
-        }, rea::Json("name", "shapeAdded"));
+        }, rea2::Json("name", "shapeAdded"));
 
-        rea::pipeline::instance()->add<QJsonObject>([this](rea::stream<QJsonObject>* aInput){
+        rea2::pipeline::instance()->add<QJsonObject>([this](rea2::stream<QJsonObject>* aInput){
             auto id = aInput->scope()->data<QString>("id");
             auto opt = aInput->scope()->data<QString>("opt");
-            auto mdl = rea::tryFind(&m_gui_models, id);
+            auto mdl = rea2::tryFind(&m_gui_models, id);
             auto lnks = mdl->links;
             auto cfg = m_data.value(id).value("operators").toObject().value(opt).toObject();
 
-            cfg.insert("type", rea::tryFind(&mdl->operators, opt)->type);
+            cfg.insert("type", rea2::tryFind(&mdl->operators, opt)->type);
             QJsonArray bf;
             for (auto i : lnks)
-                if (!i->deleted && i->end == opt && !rea::tryFind(&mdl->operators, i->start)->deleted)
+                if (!i->deleted && i->end == opt && !rea2::tryFind(&mdl->operators, i->start)->deleted)
                     bf.push_back(i->start);
             cfg.insert("before", bf);
             aInput->setData(cfg)->out();
-        }, rea::Json("name", "getOperatorConfig"));
+        }, rea2::Json("name", "getOperatorConfig"));
 
-        rea::pipeline::instance()->add<QJsonObject>([this](rea::stream<QJsonObject>* aInput){
+        rea2::pipeline::instance()->add<QJsonObject>([this](rea2::stream<QJsonObject>* aInput){
             auto id = aInput->scope()->data<QString>("id");
             auto opt = aInput->scope()->data<QString>("opt");
             auto mdl = m_data.value(id);
@@ -186,12 +186,12 @@ private:
             opts.insert(opt, src);
             mdl.insert("operators", opts);
             m_data.insert(id, mdl);
-        }, rea::Json("name", "setOperatorConfig"));
+        }, rea2::Json("name", "setOperatorConfig"));
     }
 public:
     optGphHandler(){
-        rea::pipeline::instance()->find("openWorkFile")
-        ->nextF<QString>([this](rea::stream<QString>* aInput){
+        rea2::pipeline::instance()->find("openWorkFile")
+        ->nextF<QString>([this](rea2::stream<QString>* aInput){
             auto pth = aInput->data();
             auto rt = aInput->scope()->data<QString>("root");
             auto cfg = aInput->scope()->data<QJsonObject>("config");
@@ -207,10 +207,10 @@ public:
                     ->cache<QString>("type", "optgph");
 
             m_gui_models.remove(id);
-            auto mdl_cache = rea::tryFind(&m_gui_models, id);
+            auto mdl_cache = rea2::tryFind(&m_gui_models, id);
             mdl_cache->index = int(idx);
             QJsonObject objs;
-            rea::pointList pts;
+            rea2::pointList pts;
             auto opts = mdl.value("operators").toObject();
             for (auto i : opts.keys()){
                 auto opt = opts.value(i).toObject();
@@ -219,13 +219,13 @@ public:
                     continue;
                 auto lt = QPointF(pos[0].toDouble(), pos[1].toDouble()),
                         rb = QPointF(pos[2].toDouble(), pos[3].toDouble());
-                auto opt_mdl = rea::tryFind(&mdl_cache->operators, i);
+                auto opt_mdl = rea2::tryFind(&mdl_cache->operators, i);
                 opt_mdl->type = opt.value("type").toString();
                 opt_mdl->center = (lt + rb) * 0.5;
                 pts.push_back(lt);
                 pts.push_back(rb);
-                objs.insert(i, rea::Json("type", "poly",
-                                         "points", rea::JArray(QJsonArray(), rea::JArray(lt.x(), lt.y(), lt.x(), rb.y(), rb.x(), rb.y(), rb.x(), lt.y(), lt.x(), lt.y())),
+                objs.insert(i, rea2::Json("type", "poly",
+                                         "points", rea2::JArray(QJsonArray(), rea2::JArray(lt.x(), lt.y(), lt.x(), rb.y(), rb.x(), rb.y(), rb.x(), lt.y(), lt.x(), lt.y())),
                                          "caption", opt.value("type")
                                          ));
                 auto nxts = opt.value("next").toArray();
@@ -233,29 +233,29 @@ public:
                     auto nxt = j.toString();
                     auto lnk = std::make_shared<link>(i, nxt);
                     mdl_cache->links.insert(lnk->id, lnk);
-                    rea::tryFind(&mdl_cache->operators, i)->links.push_back(lnk);
-                    rea::tryFind(&mdl_cache->operators, nxt)->links.push_back(lnk);
+                    rea2::tryFind(&mdl_cache->operators, i)->links.push_back(lnk);
+                    rea2::tryFind(&mdl_cache->operators, nxt)->links.push_back(lnk);
                 }
             }
             for (auto i : mdl_cache->links.values()){
-                auto st = rea::tryFind(&mdl_cache->operators, i->start)->center,
-                        ed = rea::tryFind(&mdl_cache->operators, i->end)->center;
-                objs.insert(i->id, rea::Json("type", "link",
+                auto st = rea2::tryFind(&mdl_cache->operators, i->start)->center,
+                        ed = rea2::tryFind(&mdl_cache->operators, i->end)->center;
+                objs.insert(i->id, rea2::Json("type", "link",
                                              "tag", "link",
-                                             "points", rea::JArray(QJsonArray(), rea::JArray(st.x(), st.y(), ed.x(), ed.y())),
+                                             "points", rea2::JArray(QJsonArray(), rea2::JArray(st.x(), st.y(), ed.x(), ed.y())),
                                              "color", "gray",
-                                             "arrow", rea::Json("visible", true)
+                                             "arrow", rea2::Json("visible", true)
                                              ));
             }
             QRectF bnd(0, 0, 100, 100);
             if (pts.size())
-                bnd = rea::calcBoundBox(pts);
+                bnd = rea2::calcBoundBox(pts);
 
-            auto anno_mdl = rea::Json("width", bnd.width() * 1.2,
+            auto anno_mdl = rea2::Json("width", bnd.width() * 1.2,
                                       "height", bnd.height() * 1.2,
                                       "max_ratio", 100,
                                       "min_ratio", 0.01,
-                                      "text", rea::Json(
+                                      "text", rea2::Json(
                                           "visible", true,
                                           "fontsize", 16,
                                           "location", "middle",
@@ -264,12 +264,12 @@ public:
                                       "objects", objs);
             aInput->outs<QJsonArray>(QJsonArray(), "updateQSGAttr_reagrid" + QString::number(int(idx)) + "_ide_optgph")
                     ->scope(true)
-                    ->cache<QJsonObject>("model", rea::Json(anno_mdl, "id", id));
+                    ->cache<QJsonObject>("model", rea2::Json(anno_mdl, "id", id));
             aInput->outs<QJsonObject>(mdl, "updateOptGphAttr_reagrid" + QString::number(idx) + "_ide_optgph")->scope()->cache("path", pth);
         }, getSuffix());
 
-        rea::pipeline::instance()->find("saveWorkFile")
-        ->nextF<QString>([this](rea::stream<QString>* aInput){
+        rea2::pipeline::instance()->find("saveWorkFile")
+        ->nextF<QString>([this](rea2::stream<QString>* aInput){
             auto pth = aInput->data();
             if (!checkValidSave(QFileInfo(pth).suffix()))
                 return;
@@ -279,20 +279,20 @@ public:
             auto dt = m_data.value(id);
             auto opts = dt.value("operators").toObject();
             QJsonObject ret_opts;
-            auto mdl = rea::tryFind(&m_gui_models, id);
+            auto mdl = rea2::tryFind(&m_gui_models, id);
             for (auto i : mdl->operators.keys()){
                 auto opt_mdl = mdl->operators.value(i);
                 if (!opt_mdl.deleted){
                     auto ct = opt_mdl.center;
                     QJsonArray nxts;
                     for (auto j : opt_mdl.links)
-                        if (!j->deleted && j->start == i && !rea::tryFind(&mdl->operators, j->end)->deleted)
+                        if (!j->deleted && j->start == i && !rea2::tryFind(&mdl->operators, j->end)->deleted)
                             nxts.push_back(j->end);
                     auto opt = opts.value(i).toObject();
                     auto seq = opt.value("seq").toArray();
                     for (auto j = seq.size() - 1; j >= 0; --j){
                         auto prv = seq[j].toString();
-                        auto prv_opt = rea::tryFind(&mdl->operators, prv);
+                        auto prv_opt = rea2::tryFind(&mdl->operators, prv);
                         if (prv_opt->deleted){
                             seq.removeAt(j);
                             continue;
@@ -308,10 +308,10 @@ public:
                     }
                     if (seq.size())
                         opt.insert("seq", seq);
-                    ret_opts.insert(i, rea::Json(opt,
+                    ret_opts.insert(i, rea2::Json(opt,
                                                  "type", opt_mdl.type,
                                                  "next", nxts,
-                                                 "qsg", rea::Json("pos", rea::JArray(ct.x() - 50, ct.y() - 15, ct.x() + 50, ct.y() + 15))));
+                                                 "qsg", rea2::Json("pos", rea2::JArray(ct.x() - 50, ct.y() - 15, ct.x() + 50, ct.y() + 15))));
                 }
             }
             dt.insert("operators", ret_opts);
@@ -327,17 +327,17 @@ private:
     QHash<QString, QJsonObject> m_data;
 };
 
-static rea::regPip<QString> create_optgph_handler([](rea::stream<QString>* aInput){
+static rea2::regPip<QString> create_optgph_handler([](rea2::stream<QString>* aInput){
     static optGphHandler optgph_hdl;
     aInput->outs(aInput->data(), "create_optgph_handler");
 }, QJsonObject(), "create_handler");
 
-class qsgPluginOptGphSelect : public rea::qsgBoardPlugin{
+class qsgPluginOptGphSelect : public rea2::qsgBoardPlugin{
 private:
     class createLink{
     private:
         QJsonArray getGeometry(){
-            return rea::JArray(QJsonArray(),
+            return rea2::JArray(QJsonArray(),
                                QJsonArray({m_st.x(), m_st.y(),
                                            m_ed.x(), m_ed.y()}));
         }
@@ -347,8 +347,8 @@ private:
             if (mdl){
                 auto id = m_parent->getQSGModel()->value("id");
                 return [nm, aShape, aCommand, id](){
-                    auto stm = rea::pipeline::instance()->run<QJsonArray>("updateQSGAttr_" + nm,
-                                       {rea::Json("key", rea::JArray("objects"),
+                    auto stm = rea2::pipeline::instance()->run<QJsonArray>("updateQSGAttr_" + nm,
+                                       {rea2::Json("key", rea2::JArray("objects"),
                                                  "type", "del",
                                                  "tar", aShape,
                                                  "cmd", aCommand,
@@ -362,15 +362,15 @@ private:
             auto nm = m_parent->getParentName();
             auto id = m_parent->getQSGModel()->value("id");
             return [nm, aShape, aPoints, aCommand, id](){
-                auto stm = rea::pipeline::instance()->instance()->run<QJsonArray>("updateQSGAttr_" + nm,
-                                   {rea::Json("key", rea::JArray("objects"),
+                auto stm = rea2::pipeline::instance()->instance()->run<QJsonArray>("updateQSGAttr_" + nm,
+                                   {rea2::Json("key", rea2::JArray("objects"),
                                               "type", "add",
                                               "tar", aShape,
-                                              "val", rea::Json(
+                                              "val", rea2::Json(
                                                         "type", "link",
                                                         "tag", "link",
                                                         "color", "gray",
-                                                        "arrow", rea::Json("visible", true),
+                                                        "arrow", rea2::Json("visible", true),
                                                         "points", aPoints),
                                               "cmd", aCommand,
                                               "id", id)}, "addLink");
@@ -381,18 +381,18 @@ private:
             auto mdl = m_parent->getQSGModel();
             if (!mdl)
                 return false;
-            auto stm = rea::pipeline::instance()->run<QJsonArray>("updateQSGAttr_" + m_parent->getParentName(),
-                                           rea::JArray(rea::Json("key", rea::JArray("objects"),
+            auto stm = rea2::pipeline::instance()->run<QJsonArray>("updateQSGAttr_" + m_parent->getParentName(),
+                                           rea2::JArray(rea2::Json("key", rea2::JArray("objects"),
                                                                  "type", "del",
                                                                  "tar", aShape,
                                                                  "id", mdl->value("id")),
-                                                       rea::Json("key", rea::JArray("objects"),
+                                                       rea2::Json("key", rea2::JArray("objects"),
                                                                  "type", "add",
                                                                  "tar", aShape,
-                                                                 "val", rea::Json("type", "link",
+                                                                 "val", rea2::Json("type", "link",
                                                                                   "tag", "link",
                                                                                   "color", "gray",
-                                                                                  "arrow", rea::Json("visible", true),
+                                                                                  "arrow", rea2::Json("visible", true),
                                                                                   "points", aPoints),
                                                                  "start", m_st_shp,
                                                                  "end", m_ed_shp,
@@ -407,7 +407,7 @@ private:
             m_parent = aParent;
             m_st = aStart;
             m_ed = m_st;
-            m_shape = rea::generateUUID();
+            m_shape = rea2::generateUUID();
             addPoly(m_shape, getGeometry(), false)();
         }
         ~createLink(){
@@ -422,8 +422,8 @@ private:
             if (m_st.x() != aPoint.x() || m_st.y() != aPoint.y()){
                 m_ed = aPoint;
                 if (storePoly(m_shape, getGeometry())){
-                    rea::pipeline::instance()->run<rea::ICommand>("addCommand",
-                                                      rea::ICommand(addPoly(m_shape, getGeometry()),
+                    rea2::pipeline::instance()->run<rea2::ICommand>("addCommand",
+                                                      rea2::ICommand(addPoly(m_shape, getGeometry()),
                                                                     removeShape(m_shape)),
                                                       "manual");
                     m_shape = "";
@@ -434,8 +434,8 @@ private:
         }
         void mouseMoveEvent(const QPointF& aPos){
             m_ed = aPos;
-            rea::pipeline::instance()->run<QJsonArray>("updateQSGAttr_" + m_parent->getParentName(),
-                               {rea::Json("obj", m_shape,
+            rea2::pipeline::instance()->run<QJsonArray>("updateQSGAttr_" + m_parent->getParentName(),
+                               {rea2::Json("obj", m_shape,
                                          "key", QJsonArray({"points"}),
                                          "id", m_parent->getQSGModel()->value("id"),
                                          "val", getGeometry())},
@@ -447,7 +447,7 @@ private:
         qsgPluginOptGphSelect* m_parent;
     };
     std::shared_ptr<createLink> m_create_link = nullptr;
-    std::shared_ptr<rea::qsgObject> tryPickUpShape(QMouseEvent *event, QString& aShape){
+    std::shared_ptr<rea2::qsgObject> tryPickUpShape(QMouseEvent *event, QString& aShape){
         auto pos = getTransNode()->matrix().inverted().map(event->pos());
         auto objs = getQSGModel()->getQSGObjects();
         for (auto i : objs.keys()){
@@ -480,17 +480,17 @@ private:
         return false;
     }
 private:
-    rea::pipe0* m_forbid_move_link;
-    rea::pipe0* m_forbid_copy_link;
-    rea::pipe0* m_updateSelectedMask;
-    rea::pipe0* m_moveLinks;
-    std::shared_ptr<rea::qsgBoardPlugin> m_origin_select;
+    rea2::pipe0* m_forbid_move_link;
+    rea2::pipe0* m_forbid_copy_link;
+    rea2::pipe0* m_updateSelectedMask;
+    rea2::pipe0* m_moveLinks;
+    std::shared_ptr<rea2::qsgBoardPlugin> m_origin_select;
     QSet<QString> m_selects;
-    QRectF calcSelectsBound(const QSet<QString>& aSelects, const QMap<QString, std::shared_ptr<rea::qsgObject>>& aShapes){
+    QRectF calcSelectsBound(const QSet<QString>& aSelects, const QMap<QString, std::shared_ptr<rea2::qsgObject>>& aShapes){
         QRectF bnd;
         int idx = 0;
         for (auto i : aSelects){
-            auto cur = reinterpret_cast<rea::shapeObject*>(aShapes.value(i).get())->getBoundBox();
+            auto cur = reinterpret_cast<rea2::shapeObject*>(aShapes.value(i).get())->getBoundBox();
             if (idx++){
                 bnd = QRectF(QPointF(std::min(bnd.left(), cur.left()), std::min(bnd.top(), cur.top())),
                              QPointF(std::max(bnd.right(), cur.right()), std::max(bnd.bottom(), cur.bottom())));
@@ -500,23 +500,23 @@ private:
         return bnd;
     }
 public:
-    qsgPluginOptGphSelect(const std::shared_ptr<rea::qsgBoardPlugin> aSelect, const QJsonObject& aConfig) : qsgBoardPlugin(aConfig){
+    qsgPluginOptGphSelect(const std::shared_ptr<rea2::qsgBoardPlugin> aSelect, const QJsonObject& aConfig) : qsgBoardPlugin(aConfig){
         m_origin_select = aSelect;
     }
     ~qsgPluginOptGphSelect() override{
-        rea::pipeline::instance()->find("updateQSGAttr_" + getParentName())->removeAspect(rea::pipe0::AspectType::AspectBefore, m_forbid_move_link->actName());
-        rea::pipeline::instance()->remove(m_forbid_move_link->actName());
-        rea::pipeline::instance()->find("updateQSGSelectMenu_" + getParentName())->removeAspect(rea::pipe0::AspectType::AspectAfter, m_forbid_copy_link->actName());
-        rea::pipeline::instance()->remove(m_forbid_copy_link->actName());
-        rea::pipeline::instance()->find("updateSelectedMask_" + getParentName())->removeAspect(rea::pipe0::AspectType::AspectAround, m_updateSelectedMask->actName());
-        rea::pipeline::instance()->remove(m_updateSelectedMask->actName());
+        rea2::pipeline::instance()->find("updateQSGAttr_" + getParentName())->removeAspect(rea2::pipe0::AspectType::AspectBefore, m_forbid_move_link->actName());
+        rea2::pipeline::instance()->remove(m_forbid_move_link->actName());
+        rea2::pipeline::instance()->find("updateQSGSelectMenu_" + getParentName())->removeAspect(rea2::pipe0::AspectType::AspectAfter, m_forbid_copy_link->actName());
+        rea2::pipeline::instance()->remove(m_forbid_copy_link->actName());
+        rea2::pipeline::instance()->find("updateSelectedMask_" + getParentName())->removeAspect(rea2::pipe0::AspectType::AspectAround, m_updateSelectedMask->actName());
+        rea2::pipeline::instance()->remove(m_updateSelectedMask->actName());
     }
 protected:
-    QString getName(rea::qsgBoard* aParent = nullptr) override{
+    QString getName(rea2::qsgBoard* aParent = nullptr) override{
         auto ret = qsgBoardPlugin::getName(aParent);
         m_origin_select->getName(aParent);
 
-        m_forbid_copy_link = rea::pipeline::instance()->add<QJsonObject>([this](rea::stream<QJsonObject>* aInput){
+        m_forbid_copy_link = rea2::pipeline::instance()->add<QJsonObject>([this](rea2::stream<QJsonObject>* aInput){
             auto dt = aInput->data();
             if (dt.size() && m_selects.size()){
                 auto objs = getQSGModel()->getQSGObjects();
@@ -534,9 +534,9 @@ protected:
                             }
                         }
             }
-        }, rea::Json("after", "updateQSGSelectMenu_" + getParentName()));
+        }, rea2::Json("after", "updateQSGSelectMenu_" + getParentName()));
 
-        m_forbid_move_link = rea::pipeline::instance()->add<QJsonArray>([this](rea::stream<QJsonArray>* aInput){
+        m_forbid_move_link = rea2::pipeline::instance()->add<QJsonArray>([this](rea2::stream<QJsonArray>* aInput){
             auto mdys = aInput->data();
             auto mdl = getQSGModel();
             if (mdl)
@@ -549,10 +549,10 @@ protected:
                     }
                 }
             aInput->out();
-        }, rea::Json("before", "updateQSGAttr_" + getParentName()));
+        }, rea2::Json("before", "updateQSGAttr_" + getParentName()));
 
-        m_updateSelectedMask = rea::pipeline::instance()->add<QSet<QString>>([this](rea::stream<QSet<QString>>* aInput){
-             rea::pointList pts;
+        m_updateSelectedMask = rea2::pipeline::instance()->add<QSet<QString>>([this](rea2::stream<QSet<QString>>* aInput){
+             rea2::pointList pts;
              m_selects = aInput->data();
              auto mdl = getQSGModel();
              if (!mdl)
@@ -566,31 +566,31 @@ protected:
                  pts.push_back(QPointF(bnd.right(), (bnd.top() + bnd.bottom()) * 0.5));
              }
              aInput->scope()->cache<QSet<QString>>("selects", m_selects);
-             aInput->outs<rea::pointList>(pts);
+             aInput->outs<rea2::pointList>(pts);
 
              QJsonObject cfg;
              if (m_selects.size())
-                cfg = rea::in(QJsonObject(), "", std::make_shared<rea::scopeCache>(rea::Json("id", mdl->value("id"), "opt", *m_selects.begin())))
+                cfg = rea2::in(QJsonObject(), "", std::make_shared<rea2::scopeCache>(rea2::Json("id", mdl->value("id"), "opt", *m_selects.begin())))
                     ->asyncCall("getOperatorConfig")->data();
              aInput->outs(cfg, "updateQSGSelects_" + getParentName())->scope(true)->cache("id", mdl->value("id").toString())->cache("opt", m_selects.size() ? *m_selects.begin() : "");
-        }, rea::Json("around", "updateSelectedMask_" + getParentName()));
+        }, rea2::Json("around", "updateSelectedMask_" + getParentName()));
 
-        m_moveLinks = rea::pipeline::instance()->find("QSGAttrUpdated_" + getParentName())->nextF<QJsonArray>([this](rea::stream<QJsonArray>* aInput){
+        m_moveLinks = rea2::pipeline::instance()->find("QSGAttrUpdated_" + getParentName())->nextF<QJsonArray>([this](rea2::stream<QJsonArray>* aInput){
             auto mdys = aInput->data();
             for (auto i : mdys){
                 auto mdy = i.toObject();
                 if (mdy.value("key") == QJsonArray({"transform"})){
                     auto opt = mdy.value("obj").toString();
                     if (opt != ""){
-                        auto ct = reinterpret_cast<rea::shapeObject*>(getQSGModel()->getQSGObjects().value(opt).get())->getBoundBox().center();
-                        aInput->outs(rea::Json("id", mdy.value("id"),
+                        auto ct = reinterpret_cast<rea2::shapeObject*>(getQSGModel()->getQSGObjects().value(opt).get())->getBoundBox().center();
+                        aInput->outs(rea2::Json("id", mdy.value("id"),
                                                "opt", opt,
                                                "x", ct.x(),
                                                "y", ct.y(),
                                                "board", getParentName()), "operatorPosChanged");
                     }
                 }else if (mdy.value("type") == "del"){
-                    aInput->outs(rea::Json("id", mdy.value("id"),
+                    aInput->outs(rea2::Json("id", mdy.value("id"),
                                            "opt", mdy.value("tar"),
                                            "cmd", mdy.value("cmd"),
                                            "board", getParentName()), "shapeDeleted");
@@ -598,8 +598,8 @@ protected:
                     auto opt = mdy.value("tar").toString();
                     auto shp = getQSGModel()->getQSGObjects().value(opt);
                     if (shp){
-                        auto ct = reinterpret_cast<rea::shapeObject*>(shp.get())->getBoundBox().center();
-                        aInput->outs(rea::Json("id", mdy.value("id"),
+                        auto ct = reinterpret_cast<rea2::shapeObject*>(shp.get())->getBoundBox().center();
+                        aInput->outs(rea2::Json("id", mdy.value("id"),
                                                "opt", opt,
                                                "cmd", mdy.value("cmd"),
                                                "x", ct.x(),
@@ -620,7 +620,7 @@ protected:
     void beforeDestroy() override{
         qsgBoardPlugin::beforeDestroy();
         m_origin_select->beforeDestroy();
-        rea::pipeline::instance()->run<QJsonObject>("updateQSGSelects_" + getParentName(), QJsonObject(), "selObject");
+        rea2::pipeline::instance()->run<QJsonObject>("updateQSGSelects_" + getParentName(), QJsonObject(), "selObject");
     }
 
     void keyPressEvent(QKeyEvent *event) override{
@@ -656,11 +656,11 @@ protected:
     }
 };
 
-static rea::regPip<QJsonObject, rea::pipePartial> plugin_select2([](rea::stream<QJsonObject>* aInput){
-    auto plg = std::make_shared<qsgPluginOptGphSelect>(aInput->scope()->data<std::shared_ptr<rea::qsgBoardPlugin>>("result"), aInput->data());
-    aInput->scope()->cache<std::shared_ptr<rea::qsgBoardPlugin>>("result", plg);
+static rea2::regPip<QJsonObject, rea2::pipePartial> plugin_select2([](rea2::stream<QJsonObject>* aInput){
+    auto plg = std::make_shared<qsgPluginOptGphSelect>(aInput->scope()->data<std::shared_ptr<rea2::qsgBoardPlugin>>("result"), aInput->data());
+    aInput->scope()->cache<std::shared_ptr<rea2::qsgBoardPlugin>>("result", plg);
     aInput->out();
-}, rea::Json("name", "create_qsgboardplugin_selectc2", "befored", "create_qsgboardplugin_select"));
+}, rea2::Json("name", "create_qsgboardplugin_selectc2", "befored", "create_qsgboardplugin_select"));
 
 #ifdef USEOPENCV
 #include "plugin/opencv/util.h"
@@ -755,7 +755,7 @@ bool convertImage(const cv::Mat& image, cv::Mat& cvt_image,
 //      "thread": 2,
 //      "next": ["output1", "output2"]
 //  }
-static rea::regPip<bool> convertImageFormat([](rea::stream<bool>* aInput){
+static rea2::regPip<bool> convertImageFormat([](rea2::stream<bool>* aInput){
     auto prms = aInput->scope()->data<QJsonObject>("param");
     auto idxes = prms.value("imageIndex").toArray();
     auto imgs = aInput->scope()->data<std::vector<QImage>>("images");
@@ -773,7 +773,7 @@ static rea::regPip<bool> convertImageFormat([](rea::stream<bool>* aInput){
     }
     aInput->scope()->cache("images", imgs);
     aInput->out();
-}, rea::Json("name", "convertImageFormat"));
+}, rea2::Json("name", "convertImageFormat"));
 
 #endif
 
@@ -796,7 +796,7 @@ protected:
     void transformUpdated(){
 
     }
-    bool pointIsInRange(const QMatrix4x4& aTransform, const std::vector<rea::pointList>& aPoints, const QPointF& aPoint, const double aRadius = 5){
+    bool pointIsInRange(const QMatrix4x4& aTransform, const std::vector<rea2::pointList>& aPoints, const QPointF& aPoint, const double aRadius = 5){
         auto pt = aTransform.map(aPoint);
         auto tar = Point_2(pt.x(), pt.y());
         auto r = aTransform.data()[0] * 5;
@@ -815,7 +815,7 @@ protected:
     }
 };
 
-class linkObject : public rea::polyObject, transformedAspect{
+class linkObject : public rea2::polyObject, transformedAspect{
 public:
     linkObject(const QJsonObject& aConfig) : polyObject(aConfig){
 
@@ -830,8 +830,8 @@ protected:
     }
 };
 
-static rea::regPip<QJsonObject, rea::pipePartial> init_createlink([](rea::stream<QJsonObject>* aInput){
-    aInput->scope()->cache<std::shared_ptr<rea::qsgObject>>("result", std::make_shared<linkObject>(aInput->data()));
+static rea2::regPip<QJsonObject, rea2::pipePartial> init_createlink([](rea2::stream<QJsonObject>* aInput){
+    aInput->scope()->cache<std::shared_ptr<rea2::qsgObject>>("result", std::make_shared<linkObject>(aInput->data()));
     aInput->out();
-}, rea::Json("name", "create_qsgobject_link"));
+}, rea2::Json("name", "create_qsgobject_link"));
 #endif

@@ -2,20 +2,20 @@
 #include "util.h"
 #include <QFileInfo>
 
-static auto fake_ret = rea::Json("angle", 160,
+static auto fake_ret = rea2::Json("angle", 160,
                           "caption", "ellipse",
-                          "center", rea::JArray(0, 0),
-                          "radius", rea::JArray(100, 100),
+                          "center", rea2::JArray(0, 0),
+                          "radius", rea2::JArray(100, 100),
                           "type", "ellipse",
                           "color", "green",
-                          "text", rea::Json(
+                          "text", rea2::Json(
                                      "visible", true,
-                                     "size", rea::JArray(50, 30),
+                                     "size", rea2::JArray(50, 30),
                                      "location", "bottom"),
                           "tag", "result",
                           "width", 5);
 
-/*static rea::regPip<int> reg_training([](rea::stream<int>* aInput){
+/*static rea2::regPip<int> reg_training([](rea2::stream<int>* aInput){
     auto scp = aInput->scope();
     auto rt = scp->data<QString>("root");
     auto pth = scp->data<QString>("path");
@@ -39,7 +39,7 @@ static auto fake_ret = rea::Json("angle", 160,
     pth0 = QFileInfo(pth0).path() + "/";
     auto cfg0 = scp->data<QJsonObject>("config0");
     for (auto i : imgs_pths)
-        writeJsonObject(rt0, pth0 + "/" + job + "/" + i + ".json", cfg0, rea::Json("objects", rea::Json("result_0", fake_ret)));
-    rea::pipeline::instance()->call("doTraining", 1000, scp, false);
-}, rea::Json("around", "doTraining"));
+        writeJsonObject(rt0, pth0 + "/" + job + "/" + i + ".json", cfg0, rea2::Json("objects", rea2::Json("result_0", fake_ret)));
+    rea2::pipeline::instance()->call("doTraining", 1000, scp, false);
+}, rea2::Json("around", "doTraining"));
 */

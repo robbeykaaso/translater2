@@ -72,7 +72,7 @@ cv::Mat QImage2cvMat(const QImage& image)
     return mat;
 }
 
-std::vector<std::vector<rea::pointList>> extractContour(const QPoint& aTopLeft, const QImage& aImage, int aEpsilon, int aThreshold){
+std::vector<std::vector<rea2::pointList>> extractContour(const QPoint& aTopLeft, const QImage& aImage, int aEpsilon, int aThreshold){
     auto img = QImage2cvMat(aImage);
     std::vector< std::vector<cv::Point>> contours;
     cv::cvtColor(img, img, cv::COLOR_BGRA2GRAY);

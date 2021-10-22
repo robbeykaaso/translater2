@@ -115,7 +115,7 @@ void customCameraController::moveCamera(const Qt3DExtras::QAbstractCameraControl
     m_mouseLastPosition = m_mouseCurrentPosition;
 }
 
-static rea::regPip<QQmlApplicationEngine*> reg_controller_qml([](rea::stream<QQmlApplicationEngine*>* aInput){
+static rea2::regPip<QQmlApplicationEngine*> reg_controller_qml([](rea2::stream<QQmlApplicationEngine*>* aInput){
     qmlRegisterType<customCameraController>("CustomCameraController", 1, 0, "CustomCameraController");
     aInput->out();
-}, rea::Json("name", "install2_qt3D"), "initRea");
+}, rea2::Json("name", "install2_qt3D"), "initRea");

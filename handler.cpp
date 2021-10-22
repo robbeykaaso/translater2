@@ -5,14 +5,14 @@
 
 void progressRead::start(int aSum){
     if (aSum)
-        rea::pipeline::instance()->run("c++_updateProgress", rea::Json("title", "loading...", "sum", aSum));
+        rea2::pipeline::instance()->run("c++_updateProgress", rea2::Json("title", "loading...", "sum", aSum));
     m_sum = aSum;
     m_failed_list.clear();
 }
 
-std::shared_ptr<rea::stream<bool>> progressRead::check(std::shared_ptr<rea::stream<bool>> aStream){
+std::shared_ptr<rea2::stream<bool>> progressRead::check(std::shared_ptr<rea2::stream<bool>> aStream){
     if (m_sum){
-        rea::pipeline::instance()->run("c++_updateProgress", QJsonObject());
+        rea2::pipeline::instance()->run("c++_updateProgress", QJsonObject());
         m_sum--;
     }
     if (aStream && !aStream->data())
@@ -25,13 +25,13 @@ void progressRead::report(){
         QString ret = "failed list: \n";
         for (auto i : m_failed_list)
             ret += i + "\n";
-        rea::pipeline::instance()->run("popMessage", rea::Json("title", "warning", "text", ret));
+        rea2::pipeline::instance()->run("popMessage", rea2::Json("title", "warning", "text", ret));
     }
 }
 
 bool handler::checkValidSave(const QString& aSuffix){
     if (getSuffix().indexOf(aSuffix) < 0){
-        auto ok = rea::in(rea::Json("title", "warning",
+        auto ok = rea2::in(rea2::Json("title", "warning",
                                     "text", "make sure to overwrite as ." + aSuffix + " file?"),
                           "", nullptr, true)
                 ->asyncCall<bool>("c++_popMessage")->data();
@@ -41,8 +41,8 @@ bool handler::checkValidSave(const QString& aSuffix){
     return true;
 }
 
-std::shared_ptr<rea::stream<bool>> handler::readStorage(const QString& aRoot, const QString& aPath, const QJsonObject& aConfig, const QString& aType){
-    auto stm = rea::in(false, "", std::make_shared<rea::scopeCache>(rea::Json("path", aPath,
+std::shared_ptr<rea2::stream<bool>> handler::readStorage(const QString& aRoot, const QString& aPath, const QJsonObject& aConfig, const QString& aType){
+    auto stm = rea2::in(false, "", std::make_shared<rea2::scopeCache>(rea2::Json("path", aPath,
                                                                               "config", aConfig)), true)
             ->asyncCall(aRoot + "read" + aType);
     return stm;

@@ -4,7 +4,7 @@
 class progressRead{
 public:
     void start(int aSum);
-    std::shared_ptr<rea::stream<bool>> check(std::shared_ptr<rea::stream<bool>> aStream);
+    std::shared_ptr<rea2::stream<bool>> check(std::shared_ptr<rea2::stream<bool>> aStream);
     void report();
 private:
     int m_sum;
@@ -14,10 +14,10 @@ private:
 class handler{
 public:
     virtual ~handler() = default;
-    std::shared_ptr<rea::stream<bool>> readStorage(const QString& aRoot, const QString& aPath, const QJsonObject& aConfig, const QString& aType);
+    std::shared_ptr<rea2::stream<bool>> readStorage(const QString& aRoot, const QString& aPath, const QJsonObject& aConfig, const QString& aType);
 #define dpstWrite(aType)    \
-    std::shared_ptr<rea::stream<bool>> write##aType(const QString& aRoot, const QString& aPath, const QJsonObject& aConfig, const Q##aType& aJson){ \
-        return rea::in(false, "", std::make_shared<rea::scopeCache>(rea::Json("path", aPath, \
+    std::shared_ptr<rea2::stream<bool>> write##aType(const QString& aRoot, const QString& aPath, const QJsonObject& aConfig, const Q##aType& aJson){ \
+        return rea2::in(false, "", std::make_shared<rea2::scopeCache>(rea2::Json("path", aPath, \
                                                                               "config", aConfig))\
         ->cache<Q##aType>("data", aJson), true)->asyncCall(aRoot + STR(write##aType)); \
     }

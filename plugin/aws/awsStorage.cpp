@@ -109,33 +109,33 @@ void awsStorage::checkSameEnd(const QJsonObject& aConfig){
 
 void awsStorage::initialize(){
 #define READSTORAGE(aType) \
-    rea::pipeline::instance()->add<bool, rea::pipeParallel>([this](rea::stream<bool>* aInput) { \
+    rea2::pipeline::instance()->add<bool, rea2::pipeParallel>([this](rea2::stream<bool>* aInput) { \
         checkSameEnd(aInput->scope()->data<QJsonObject>("config")); \
         Q##aType dt; \
         auto ret = read##aType(aInput->scope()->data<QString>("path"), dt); \
         aInput->scope()->cache("data", dt); \
         aInput->setData(ret)->out(); \
-    }, rea::Json("name", m_root + STR(read##aType)))
+    }, rea2::Json("name", m_root + STR(read##aType)))
 
 #define WRITESTORAGE(aType) \
-    rea::pipeline::instance()->add<bool, rea::pipeParallel>([this](rea::stream<bool>* aInput){ \
+    rea2::pipeline::instance()->add<bool, rea2::pipeParallel>([this](rea2::stream<bool>* aInput){ \
         checkSameEnd(aInput->scope()->data<QJsonObject>("config")); \
         aInput->setData(write##aType(aInput->scope()->data<QString>("path"), aInput->scope()->data<Q##aType>("data")))->out(); \
-}, rea::Json("name", m_root + STR(write##aType)))
+}, rea2::Json("name", m_root + STR(write##aType)))
 
 #ifdef USEOPENCV
-    rea::pipeline::instance()->add<bool, rea::pipeParallel>([this](rea::stream<bool>* aInput) {
+    rea2::pipeline::instance()->add<bool, rea2::pipeParallel>([this](rea2::stream<bool>* aInput) {
         checkSameEnd(aInput->scope()->data<QJsonObject>("config"));
         cv::Mat dt;
         auto ret = readCVMat(aInput->scope()->data<QString>("path"), dt);
         aInput->scope()->cache("data", dt);
         aInput->setData(ret)->out();
-    }, rea::Json("name", m_root + "readCVMat"));
+    }, rea2::Json("name", m_root + "readCVMat"));
 
-    rea::pipeline::instance()->add<bool, rea::pipeParallel>([this](rea::stream<bool>* aInput){
+    rea2::pipeline::instance()->add<bool, rea2::pipeParallel>([this](rea2::stream<bool>* aInput){
         checkSameEnd(aInput->scope()->data<QJsonObject>("config"));
         aInput->setData(writeCVMat(aInput->scope()->data<QString>("path"), aInput->scope()->data<cv::Mat>("data")))->out();
-    }, rea::Json("name", m_root + "writeCVMat"));
+    }, rea2::Json("name", m_root + "writeCVMat"));
 #endif
 
     READSTORAGE(JsonObject);
@@ -145,35 +145,35 @@ void awsStorage::initialize(){
     WRITESTORAGE(ByteArray);
     WRITESTORAGE(Image);
 
-    rea::pipeline::instance()->add<QString, rea::pipePartial>([this](rea::stream<QString>* aInput){
+    rea2::pipeline::instance()->add<QString, rea2::pipePartial>([this](rea2::stream<QString>* aInput){
         checkSameEnd(aInput->scope()->data<QJsonObject>("config"));
-        rea::pipeline::instance()->run("c++_updateProgress", rea::Json("title", "scanned...", "sum", 1));
+        rea2::pipeline::instance()->run("c++_updateProgress", rea2::Json("title", "scanned...", "sum", 1));
         auto fls = listFiles(aInput->data());
-        rea::pipeline::instance()->run("c++_updateProgress", QJsonObject());
+        rea2::pipeline::instance()->run("c++_updateProgress", QJsonObject());
         aInput->scope()->cache("data", fls);
         aInput->out();
-    }, rea::Json("name", m_root + "listFiles", "thread", 10));
+    }, rea2::Json("name", m_root + "listFiles", "thread", 10));
 
-    rea::pipeline::instance()->add<QString, rea::pipePartial>([this](rea::stream<QString>* aInput){
+    rea2::pipeline::instance()->add<QString, rea2::pipePartial>([this](rea2::stream<QString>* aInput){
         checkSameEnd(aInput->scope()->data<QJsonObject>("config"));
         std::vector<QString> fls;
         listAllFiles(aInput->data(), fls);
         aInput->scope()->cache("data", fls);
         aInput->out();
-    }, rea::Json("name", m_root + "listAllFiles"));
+    }, rea2::Json("name", m_root + "listAllFiles"));
 
-    rea::pipeline::instance()->add<QString, rea::pipeParallel>([this](rea::stream<QString>* aInput){
+    rea2::pipeline::instance()->add<QString, rea2::pipeParallel>([this](rea2::stream<QString>* aInput){
         checkSameEnd(aInput->scope()->data<QJsonObject>("config"));
-        rea::pipeline::instance()->run("c++_updateProgress", rea::Json("title", "processing...", "sum", 1));
+        rea2::pipeline::instance()->run("c++_updateProgress", rea2::Json("title", "processing...", "sum", 1));
         deletePath(aInput->data());
-        rea::pipeline::instance()->run("c++_updateProgress", QJsonObject());
+        rea2::pipeline::instance()->run("c++_updateProgress", QJsonObject());
         aInput->out();
-    }, rea::Json("name", m_root + "deletePath", "thread", 11));
+    }, rea2::Json("name", m_root + "deletePath", "thread", 11));
 
-    rea::pipeline::instance()->add<QString, rea::pipePartial>([this](rea::stream<QString>* aInput){
+    rea2::pipeline::instance()->add<QString, rea2::pipePartial>([this](rea2::stream<QString>* aInput){
         checkSameEnd(aInput->scope()->data<QJsonObject>("config"));
         aInput->outs(lastModifiedTime(aInput->data()));
-    }, rea::Json("name", m_root + "lastModified"));
+    }, rea2::Json("name", m_root + "lastModified"));
 }
 
 awsStorage::awsStorage(const QString& aType) : fsStorage(aType){
@@ -221,7 +221,7 @@ std::vector<QString> awsStorage::listFiles(const QString& aDirectory){
     std::vector<QString> ret;
     do{
         m_aws.list_s3_objects(m_root.toStdString().data(), dir.toStdString().data(), lst, mk.toStdString().data());
-        rea::pipeline::instance()->run("c++_updateProgress", rea::Json("step", - int(lst.size())));
+        rea2::pipeline::instance()->run("c++_updateProgress", rea2::Json("step", - int(lst.size())));
         for (auto i : lst){
             auto fl = QString::fromStdString(i);
             fl.remove(0, aDirectory.length() + (aDirectory == "" ? 0 : 1));
@@ -232,7 +232,7 @@ std::vector<QString> awsStorage::listFiles(const QString& aDirectory){
                 ret.push_back(fl);
             }
         }
-        rea::pipeline::instance()->run("c++_updateProgress", rea::Json("step", int(lst.size())));
+        rea2::pipeline::instance()->run("c++_updateProgress", rea2::Json("step", int(lst.size())));
         if (lst.size() >= 199){
             mk = QString::fromStdString(lst.back());
             lst.clear();
@@ -335,10 +335,10 @@ void awsStorage::deleteAWSDirectory(AWSClient& aClient, const QString& aBucket, 
         aClient.delete_s3_object(aBucket.toStdString().c_str(), aPath.toStdString().c_str());
     else{
         std::vector<QString> lst = listFiles(aPath);
-        rea::pipeline::instance()->run("c++_updateProgress", rea::Json("step", - int(lst.size())));
+        rea2::pipeline::instance()->run("c++_updateProgress", rea2::Json("step", - int(lst.size())));
         for (auto i : lst)
             deleteAWSDirectory(aClient, aBucket, aPath + "/" + i);
-        rea::pipeline::instance()->run("c++_updateProgress", rea::Json("step", int(lst.size())));
+        rea2::pipeline::instance()->run("c++_updateProgress", rea2::Json("step", int(lst.size())));
     }
 }
 

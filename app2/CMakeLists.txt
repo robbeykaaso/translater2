@@ -19,9 +19,9 @@ set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG /OP
 
 #message("include: ${PROJECT_SOURCE_DIR}")
 find_package(Qt5 COMPONENTS Widgets Core Quick REQUIRED)
-set(REA_DIR ${CMAKE_CURRENT_LIST_DIR}/../frm/cmake)
+set(REA2_DIR ${CMAKE_CURRENT_LIST_DIR}/../frm/cmake)
 #message("xxx: ${CMAKE_CURRENT_LIST_DIR}")
-find_package(REA)
+find_package(REA2)
 #find_package(PythonLibs REQUIRED)
 
 #qtquick_compiler_add_resources(RESOURCES qml.qrc)
@@ -38,7 +38,7 @@ set(my_Sources
 
 set(my_Libs
     Qt5::Core Qt5::Widgets Qt5::Quick
-    ${REA_LIBS}
+    ${REA2_LIBS}
     dbghelp
     )
 
@@ -49,7 +49,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     ${my_Libs}
     )
 
-include_directories(${REA_INCLUDE_DIRS})
+include_directories(${REA2_INCLUDE_DIRS})
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory

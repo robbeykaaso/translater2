@@ -11,8 +11,8 @@ private:
 public:
     threeDHandler(){
 
-        rea::pipeline::instance()->find("openWorkFile")
-        ->nextF<QString>([](rea::stream<QString>* aInput){
+        rea2::pipeline::instance()->find("openWorkFile")
+        ->nextF<QString>([](rea2::stream<QString>* aInput){
            /* auto pth = aInput->data();
             auto rt = aInput->scope()->data<QString>("root");
             auto stm = readStorage(rt, pth, aInput->scope()->data<QJsonObject>("config"), "ByteArray");
@@ -26,15 +26,15 @@ public:
             aInput->outs<QString>(aInput->data(), "update3DAttr_reagrid" + QString::number(int(idx)) + "_ide_3d");
         }, getSuffix());
 
-        rea::pipeline::instance()->find("saveWorkFile")
-        ->nextF<QString>([](rea::stream<QString>* aInput){
-            aInput->outs(rea::Json("title", "warning", "text", "not supported yet!"), "c++_popMessage");
+        rea2::pipeline::instance()->find("saveWorkFile")
+        ->nextF<QString>([](rea2::stream<QString>* aInput){
+            aInput->outs(rea2::Json("title", "warning", "text", "not supported yet!"), "c++_popMessage");
         }, getSuffix());
     }
 };
 
 
-static rea::regPip<QString> create_3d_handler([](rea::stream<QString>* aInput){
+static rea2::regPip<QString> create_3d_handler([](rea2::stream<QString>* aInput){
     static threeDHandler three_hdl;
     aInput->outs(aInput->data(), "create_3d_handler");
 }, QJsonObject(), "create_handler");

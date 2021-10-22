@@ -458,8 +458,8 @@ Row{
     Component.onCompleted: {
         /*auto imgs = aModel.value("jobs").toObject();
         for (auto i : imgs.keys())
-            dt.push_back(rea::Json("entry", rea::JArray(i)));
-        auto ret = rea::Json("title", rea::JArray("id"), "data", dt);
+            dt.push_back(rea2::Json("entry", rea2::JArray(i)));
+        auto ret = rea2::Json("title", rea2::JArray("id"), "data", dt);
         if (dt.size())
             ret.insert("selects", QJsonArray({aSelLast ? dt.size() - 1 : 0}));*/
 

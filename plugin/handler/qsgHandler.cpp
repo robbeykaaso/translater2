@@ -12,8 +12,8 @@ private:
     }
 public:
     qsgHandler(){
-        rea::pipeline::instance()->find("openWorkFile")
-        ->nextF<QString>([this](rea::stream<QString>* aInput){
+        rea2::pipeline::instance()->find("openWorkFile")
+        ->nextF<QString>([this](rea2::stream<QString>* aInput){
             auto pth = aInput->data();
             auto rt = aInput->scope()->data<QString>("root");
             auto cfg = aInput->scope()->data<QJsonObject>("config");
@@ -43,25 +43,25 @@ public:
             }
             prg.report();
             if (mdl.empty()){
-                mdl = rea::Json("width", 100,
+                mdl = rea2::Json("width", 100,
                                 "height", 100,
                                 "max_ratio", 100,
                                 "min_ratio", 0.01);
             }
             aInput->scope(true)
-                    ->cache<QJsonObject>("model", rea::Json(mdl, "id", pth))
+                    ->cache<QJsonObject>("model", rea2::Json(mdl, "id", pth))
                     ->cache<QHash<QString, QImage>>("image", imgs);
             aInput->outs<QJsonArray>(QJsonArray(), "updateQSGAttr_reagrid" + QString::number(int(idx)) + "_ide_image");
         }, getSuffix());
 
-        rea::pipeline::instance()->find("saveWorkFile")
-        ->nextF<QString>([this](rea::stream<QString>* aInput){
+        rea2::pipeline::instance()->find("saveWorkFile")
+        ->nextF<QString>([this](rea2::stream<QString>* aInput){
             auto pth = aInput->data();
             if (!checkValidSave(QFileInfo(pth).suffix()))
                 return;
             auto rt = aInput->scope()->data<QString>("root");
-            auto dt = rea::in<rea::qsgModel*>(nullptr, "", nullptr, true)->asyncCall("getQSGModel_" + aInput->scope()->data<QString>("name") + "_ide_image", false)->data();
-            auto ok = rea::in(false, "", std::make_shared<rea::scopeCache>(rea::Json("path", pth,
+            auto dt = rea2::in<rea2::qsgModel*>(nullptr, "", nullptr, true)->asyncCall("getQSGModel_" + aInput->scope()->data<QString>("name") + "_ide_image", false)->data();
+            auto ok = rea2::in(false, "", std::make_shared<rea2::scopeCache>(rea2::Json("path", pth,
                                                                            "config", aInput->scope()->data<QJsonObject>("config")))
                                ->cache<QJsonObject>("data", *dt), true)
                     ->asyncCall(rt + "writeJsonObject")->data();
@@ -74,7 +74,7 @@ private:
 };
 
 
-static rea::regPip<QString> create_qsg_handler([](rea::stream<QString>* aInput){
+static rea2::regPip<QString> create_qsg_handler([](rea2::stream<QString>* aInput){
     static qsgHandler qsg_hdl;
     aInput->outs(aInput->data(), "create_qsg_handler");
 }, QJsonObject(), "create_handler");

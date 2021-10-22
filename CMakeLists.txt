@@ -24,8 +24,8 @@ project(NWLan)
 #add_definitions(-DEXPORTDLL)
 
 find_package(Qt5 COMPONENTS Widgets Core Quick SerialPort SerialBus WebEngineWidgets WebEngine 3DCore 3DExtras 3DRender 3DInput REQUIRED)
-set(REA_DIR ${CMAKE_CURRENT_LIST_DIR}/../frm/cmake)
-find_package(REA)
+set(REA2_DIR ${CMAKE_CURRENT_LIST_DIR}/../frm/cmake)
+find_package(REA2)
 
 set(my_Sources
     #"qml.qrc"
@@ -50,7 +50,7 @@ set(my_Libs
     Qt5::3DExtras
     Qt5::3DRender
     Qt5::3DInput
-    ${REA_LIBS}
+    ${REA2_LIBS}
     )
 
 file(GLOB PLUGINS ${CMAKE_CURRENT_SOURCE_DIR}/plugin/*)
@@ -71,7 +71,7 @@ add_library(NWLan SHARED
 target_link_libraries(NWLan PRIVATE
     ${my_Libs})
 
-include_directories(${REA_INCLUDE_DIRS})
+include_directories(${REA2_INCLUDE_DIRS})
 
 file(GLOB PLUGINS ${CMAKE_CURRENT_SOURCE_DIR}/plugin/*)
 foreach(plg ${PLUGINS})

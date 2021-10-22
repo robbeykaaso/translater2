@@ -8,8 +8,8 @@ public:
         m_handler = aHandler;
     }
     virtual ~dpstMode(){}
-    virtual QJsonObject getAnnos(const QString& aID, const QJsonObject& aModel, rea::stream<QString>* aInput) = 0;
-    virtual void saveWorkFile(const QString& aID, rea::stream<QString>* aInput) = 0;
+    virtual QJsonObject getAnnos(const QString& aID, const QJsonObject& aModel, rea2::stream<QString>* aInput) = 0;
+    virtual void saveWorkFile(const QString& aID, rea2::stream<QString>* aInput) = 0;
     virtual QString name() = 0;
 protected:
     dpstAnnoHandler* m_handler;
@@ -20,8 +20,8 @@ public:
     annoMode(dpstAnnoHandler* aHandler) : dpstMode(aHandler){
 
     }
-    QJsonObject getAnnos(const QString& aID, const QJsonObject& aModel, rea::stream<QString>* aInput) override;
-    void saveWorkFile(const QString& aID, rea::stream<QString>* aInput) override;
+    QJsonObject getAnnos(const QString& aID, const QJsonObject& aModel, rea2::stream<QString>* aInput) override;
+    void saveWorkFile(const QString& aID, rea2::stream<QString>* aInput) override;
     QString name() override{
         return "anno";
     }
@@ -32,8 +32,8 @@ public:
     roiMode(dpstAnnoHandler* aHandler) : dpstMode(aHandler){
 
     }
-    QJsonObject getAnnos(const QString& aID, const QJsonObject& aModel, rea::stream<QString>* aInput) override;
-    void saveWorkFile(const QString& aID, rea::stream<QString>* aInput) override;
+    QJsonObject getAnnos(const QString& aID, const QJsonObject& aModel, rea2::stream<QString>* aInput) override;
+    void saveWorkFile(const QString& aID, rea2::stream<QString>* aInput) override;
     QString name() override{
         return "roi";
     }
@@ -50,9 +50,9 @@ private:
 public:
     dpstAnnoHandler();
 private:
-    std::shared_ptr<dpstMode> getMode(const QString& aID, rea::stream<QString>* aInput);
+    std::shared_ptr<dpstMode> getMode(const QString& aID, rea2::stream<QString>* aInput);
     void switchMode(const QString& aID, const QString& aMode);
-    std::shared_ptr<rea::stream<QString>> getTaskInfo(const QString& aID, rea::stream<QString>* aInput);
+    std::shared_ptr<rea2::stream<QString>> getTaskInfo(const QString& aID, rea2::stream<QString>* aInput);
     QHash<QString, long long> m_last_modified_time;  //avoid multi-monitors to open multi-times for the same modification
     QHash<QString, QJsonObject> m_data;
 private:

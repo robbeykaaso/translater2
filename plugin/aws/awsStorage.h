@@ -7,7 +7,7 @@
     #include "opencv2/opencv.hpp"
 #endif
 
-class awsStorage : public rea::fsStorage {
+class awsStorage : public rea2::fsStorage {
 public:
     awsStorage(const QString& aType = "");
     bool isValid() override { return m_aws.isValid(); }

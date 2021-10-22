@@ -57,7 +57,7 @@ void AWSClient::initialize(std::function<bool(void)> aStartService, const QJsonO
     }
 
     auto new_end = false;
-    auto ip_port = aConfig.value("ip").toString(rea::GetLocalIP().toString() + ":9000").toStdString(); //"http://192.168.1.122:9000";
+    auto ip_port = aConfig.value("ip").toString(rea2::GetLocalIP().toString() + ":9000").toStdString(); //"http://192.168.1.122:9000";
     if (m_ip_port != ip_port){
         m_ip_port = ip_port;
         new_end = true;

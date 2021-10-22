@@ -10,8 +10,8 @@ private:
     }
 public:
     htmlHandler(){
-        rea::pipeline::instance()->find("openWorkFile")
-        ->nextF<QString>([this](rea::stream<QString>* aInput){
+        rea2::pipeline::instance()->find("openWorkFile")
+        ->nextF<QString>([this](rea2::stream<QString>* aInput){
             auto pth = aInput->data();
             auto rt = aInput->scope()->data<QString>("root");
             auto cfg = aInput->scope()->data<QJsonObject>("config");
@@ -28,14 +28,14 @@ public:
                     ->cache<QString>("type", "data");
         }, getSuffix());
 
-        rea::pipeline::instance()->find("saveWorkFile")
-        ->nextF<QString>([](rea::stream<QString>* aInput){
-            aInput->outs(rea::Json("title", "warning", "text", "not supported yet!"), "c++_popMessage");
+        rea2::pipeline::instance()->find("saveWorkFile")
+        ->nextF<QString>([](rea2::stream<QString>* aInput){
+            aInput->outs(rea2::Json("title", "warning", "text", "not supported yet!"), "c++_popMessage");
         }, getSuffix());
     }
 };
 
-static rea::regPip<QString> create_html_handler([](rea::stream<QString>* aInput){
+static rea2::regPip<QString> create_html_handler([](rea2::stream<QString>* aInput){
     static htmlHandler html_hdl;
     aInput->outs(aInput->data(), "create_html_handler");
 }, QJsonObject(), "create_handler");

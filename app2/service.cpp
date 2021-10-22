@@ -18,8 +18,8 @@ private:
             return false;
         m_running.insert(aJob);
         auto cfg = m_jobs.value(aJob).toObject();
-        rea::pipeline::instance()->run<int>("doTraining", cfg.value("time").toInt(),
-                                            "", std::make_shared<rea::scopeCache>(rea::Json(cfg,
+        rea2::pipeline::instance()->run<int>("doTraining", cfg.value("time").toInt(),
+                                            "", std::make_shared<rea2::scopeCache>(rea2::Json(cfg,
                                                                                             "job", aJob,
                                                                                             "root0", stgRoot,
                                                                                             "path0", stgPath,
@@ -29,20 +29,20 @@ private:
     }
 private:
     void serviceTest(const QString& aExternal){
-        /*rea::pipeline::instance()->add<QJsonObject>([](rea::stream<QJsonObject>* aInput){
+        /*rea2::pipeline::instance()->add<QJsonObject>([](rea2::stream<QJsonObject>* aInput){
             std::cout << "from client" << std::endl;
-            aInput->setData(rea::Json("hello", "world"))->out();
-        }, rea::Json("name", "testServer",
+            aInput->setData(rea2::Json("hello", "world"))->out();
+        }, rea2::Json("name", "testServer",
                      "external", aExternal));*/
     }
     const int whole_time = 1000;
     void serviceInternal(){
-        /*rea::pipeline::instance()->add<QString>([](rea::stream<QString>* aInput){
+        /*rea2::pipeline::instance()->add<QString>([](rea2::stream<QString>* aInput){
             aInput->out();
-        }, rea::Json("name", "logTrain",
+        }, rea2::Json("name", "logTrain",
                      "external", "qml"));*/
 
-        rea::pipeline::instance()->add<int, rea::pipeParallel>([this](rea::stream<int>* aInput){
+        rea2::pipeline::instance()->add<int, rea2::pipeParallel>([this](rea2::stream<int>* aInput){
             auto tm = aInput->data();
             if (tm >= whole_time){
                 auto job = aInput->scope()->data<QString>("job");
@@ -61,10 +61,10 @@ private:
             auto usr = aInput->scope()->data<QString>("user");
             std::lock_guard<std::mutex> lg(m_socket_mutex);
             if (m_clients.contains(usr)){
-                rea::pipeline::instance()->run("logTrain", tm < whole_time ? "time cost: " + QString::number(tm) : "complete",
+                rea2::pipeline::instance()->run("logTrain", tm < whole_time ? "time cost: " + QString::number(tm) : "complete",
                                                "", aInput->scope()->cache("socket", m_clients.value(usr)));
             }
-        }, rea::Json("name", "doTraining"));
+        }, rea2::Json("name", "doTraining"));
     }
 public:
     dl(){
@@ -83,17 +83,17 @@ public:
             }
         }
 
-        rea::pipeline::instance()->add<QString>([this](rea::stream<QString>* aInput){
+        rea2::pipeline::instance()->add<QString>([this](rea2::stream<QString>* aInput){
             std::lock_guard<std::mutex> lg(m_socket_mutex);
             m_clients.insert(aInput->data(), aInput->scope()->data<QTcpSocket*>("socket"));
             aInput->scope()->cache("config", stgConfig)
                     ->cache("root", stgRoot)
                     ->cache("path", stgPath);
             aInput->out();
-        }, rea::Json("name", "clientOnline",
+        }, rea2::Json("name", "clientOnline",
                      "external", "c++"));
 
-        rea::pipeline::instance()->find("clientStatusChanged")->nextF<bool>([this](rea::stream<bool>* aInput){
+        rea2::pipeline::instance()->find("clientStatusChanged")->nextF<bool>([this](rea2::stream<bool>* aInput){
             if (!aInput->data()){
                 std::lock_guard<std::mutex> lg(m_socket_mutex);
                 for (auto i : m_clients.keys())
@@ -104,10 +104,10 @@ public:
             }
         });
 
-        rea::pipeline::instance()->add<QJsonObject>([this](rea::stream<QJsonObject>* aInput){
+        rea2::pipeline::instance()->add<QJsonObject>([this](rea2::stream<QJsonObject>* aInput){
             auto usr = getUser(aInput->scope()->data<QTcpSocket*>("socket"));
             if (usr == ""){
-                aInput->setData(rea::Json(aInput->data(),
+                aInput->setData(rea2::Json(aInput->data(),
                                           "err", 1,
                                           "msg", "no this user!"))->out();
                 return;
@@ -118,24 +118,24 @@ public:
             auto root = dt.value("root").toString();
             auto cfg = dt.value("config").toObject();
             std::lock_guard<std::mutex> lg(m_job_mutex);
-            m_jobs.insert(job, rea::Json("path", pth,
+            m_jobs.insert(job, rea2::Json("path", pth,
                                          "root", root,
                                          "config", cfg,
                                          "user", usr,
                                          "status", "running"));
             if (writeJsonObject(stgRoot, stgPath, stgConfig, m_jobs)->data() && startJob(job)){
-                aInput->setData(rea::Json(aInput->data(), "err", 0))->out();
+                aInput->setData(rea2::Json(aInput->data(), "err", 0))->out();
             }else{
                 m_jobs.remove(job);
-                aInput->setData(rea::Json(aInput->data(),
+                aInput->setData(rea2::Json(aInput->data(),
                                           "err", 1,
                                           "msg", "start job failed!"))->out();
             }
-        }, rea::Json("name", "startTrain", "external", "qml"));
+        }, rea2::Json("name", "startTrain", "external", "qml"));
     }
 private:
     QString snowflakeID(){
-        return QString::number(QDateTime().currentDateTime().toTime_t()) + "-" + rea::generateUUID();
+        return QString::number(QDateTime().currentDateTime().toTime_t()) + "-" + rea2::generateUUID();
     }
     QString getUser(QTcpSocket* aSocket){
         for (auto i : m_clients.keys())
@@ -148,9 +148,9 @@ private:
     QJsonObject m_jobs;
 };
 
-static rea::regPip<QQmlApplicationEngine*> reg_tcp_linker([](rea::stream<QQmlApplicationEngine*>* aInput){
-    static rea::fsStorage stg;
+static rea2::regPip<QQmlApplicationEngine*> reg_tcp_linker([](rea2::stream<QQmlApplicationEngine*>* aInput){
+    static rea2::fsStorage stg;
     stg.initialize();
     static dl dl_;
     aInput->out();
-}, rea::Json("name", "install10_server"), "initRea");
+}, rea2::Json("name", "install10_server"), "initRea");

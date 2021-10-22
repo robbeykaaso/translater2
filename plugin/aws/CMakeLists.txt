@@ -1,4 +1,4 @@
-set(USEAWS OFF)
+set(USEAWS ON)
 
 if (${USEAWS} STREQUAL "ON")
     #set(AWSSDK_DIR "D:/awss3c++/aws-sdk-cpp/buildtest4/install/lib/cmake/AWSSDK")

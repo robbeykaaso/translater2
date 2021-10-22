@@ -12,13 +12,13 @@
 #include <QJsonDocument>
 int main(int argc, char *argv[])
 {
-    std::cout << rea::getDefaultPipelineName().toStdString() << std::endl;
+    std::cout << rea2::getDefaultPipelineName().toStdString() << std::endl;
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
     QApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
-    rea::pipeline::instance()->run<QQmlApplicationEngine*>("initRea", &engine, "", std::make_shared<rea::scopeCache>(rea::Json("rea-qml", rea::Json("param", rea::Json("use", false)))));
+    rea2::pipeline::instance()->run<QQmlApplicationEngine*>("initRea", &engine, "", std::make_shared<rea2::scopeCache>(rea2::Json("rea-qml", rea2::Json("param", rea2::Json("use", false)))));
 
     auto ret = app.exec();
 

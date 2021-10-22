@@ -2,7 +2,7 @@
 #include <QNetworkInterface>
 #include "util.h"
 
-namespace rea {
+namespace rea2 {
 
 DiscoveryManager::DiscoveryManager(quint16 aReceivePort, QObject *parent)
     : QObject(parent)

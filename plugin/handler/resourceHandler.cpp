@@ -3,13 +3,13 @@
 class resourceHandler{
 public:
     resourceHandler(){
-        rea::pipeline::instance()->add<QJsonObject>([this](rea::stream<QJsonObject>* aInput){
+        rea2::pipeline::instance()->add<QJsonObject>([this](rea2::stream<QJsonObject>* aInput){
             aInput->out();
-        }, rea::Json("name", "copyToClipboard", "external", "qml"));
+        }, rea2::Json("name", "copyToClipboard", "external", "qml"));
     }
 };
 
-static rea::regPip<QString> create_resource_handler([](rea::stream<QString>* aInput){
+static rea2::regPip<QString> create_resource_handler([](rea2::stream<QString>* aInput){
     static resourceHandler res_hdl;
     aInput->outs(aInput->data(), "create_resource___handler");
 }, QJsonObject(), "create_handler");

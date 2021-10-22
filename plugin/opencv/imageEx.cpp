@@ -1,9 +1,9 @@
 #include "plugin/opencv/util.h"
 #include <QQuickItem>
 
-class imageObjectEx : public rea::imageObject {
+class imageObjectEx : public rea2::imageObject {
 public:
-    rea::IUpdateQSGAttr updateQSGAttr(const QString& aModification) override{
+    rea2::IUpdateQSGAttr updateQSGAttr(const QString& aModification) override{
         if (aModification == "resize_method_"){
             return [this](QSGNode*){
                 updateResizeShow();
@@ -36,7 +36,7 @@ private:
         auto wcs2scs = reinterpret_cast<QSGTransformNode*>(m_node->nextSibling())->matrix(),
                 org2scs = wcs2scs * m_ocs2wcs * org2ocs,
                 scs2ocs = org2scs.inverted();
-        auto bnd_ocs = rea::calcBoundBox(rea::pointList({scs2ocs.map(QPointF(0, 0)),
+        auto bnd_ocs = rea2::calcBoundBox(rea2::pointList({scs2ocs.map(QPointF(0, 0)),
                                                          scs2ocs.map(QPointF(m_window->width() - 1, 0)),
                                                          scs2ocs.map(QPointF(m_window->width() - 1, m_window->height() - 1)),
                                                          scs2ocs.map(QPointF(0, m_window->height() - 1))}));
@@ -45,7 +45,7 @@ private:
         do{
             if (ocs_rb.x() > ocs_lt.x() && ocs_rb.y() > ocs_lt.y()){
                 auto cliped = m_image(cv::Rect(ocs_lt.x(), ocs_lt.y(), ocs_rb.x() - ocs_lt.x() + 1, ocs_rb.y() - ocs_lt.y() + 1));
-                auto bnd_scs = rea::calcBoundBox(rea::pointList({org2scs.map(ocs_lt),
+                auto bnd_scs = rea2::calcBoundBox(rea2::pointList({org2scs.map(ocs_lt),
                                                                  org2scs.map(QPointF(ocs_lt.x(), ocs_rb.y())),
                                                                  org2scs.map(QPointF(ocs_rb.x(), ocs_lt.y())),
                                                                  org2scs.map(ocs_rb)}));
@@ -110,7 +110,7 @@ protected:
     }
     void updateTransform() override {
         m_ocs2wcs = getTransform(*this);
-        rea::pointList pts;
+        rea2::pointList pts;
         auto rg = getRange(QImage());
         pts.push_back(rg.topLeft());
         pts.push_back(rg.topRight());
@@ -125,6 +125,6 @@ protected:
     }
 };
 
-static rea::regPip<QJsonObject> create_image([](rea::stream<QJsonObject>* aInput){
-    aInput->scope()->cache<std::shared_ptr<rea::qsgObject>>("result", std::make_shared<imageObjectEx>(aInput->data()));
-}, rea::Json("around", "create_qsgobject_image"));
+static rea2::regPip<QJsonObject> create_image([](rea2::stream<QJsonObject>* aInput){
+    aInput->scope()->cache<std::shared_ptr<rea2::qsgObject>>("result", std::make_shared<imageObjectEx>(aInput->data()));
+}, rea2::Json("around", "create_qsgobject_image"));
