@@ -13,10 +13,10 @@ Item{
 
     Component.onCompleted: {
         var handlers = {}
-        var fls = Pipelines().input("gui/service", "", null, true).asyncCall("qml_listFiles").scope().data("data")
+        var fls = Pipelines().input("nwlan_ui/gui/service", "", null, true).asyncCall("qml_listFiles").scope().data("data")
         if (fls)
             for (var j in fls){
-                var coms = Pipelines().input("gui/service/" + fls[j], "", null, true).asyncCall("qml_listFiles").scope().data("data")
+                var coms = Pipelines().input("nwlan_ui/gui/service/" + fls[j], "", null, true).asyncCall("qml_listFiles").scope().data("data")
                 var com = null
                 for (var k in coms)
                     if (coms[k].endsWith(".qml")){

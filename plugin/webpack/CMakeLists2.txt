@@ -7,8 +7,8 @@ if (${USEWEB} STREQUAL "ON")
         "${CMAKE_SOURCE_DIR}/plugin/webpack/public/js"
         )
     list(APPEND gui_target
-        "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/../assets"
-        "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/../html"
-        "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/../js"
+        "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/../nwlan_ui/assets"
+        "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/../nwlan_ui/html"
+        "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/../nwlan_ui/js"
         )
 endif()

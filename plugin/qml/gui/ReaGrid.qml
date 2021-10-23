@@ -100,7 +100,7 @@ WebEngineView {
             stm = Pipelines().asyncCall("pipelineQMLObject", 0)
             webview_chn.registerObject("Pipelineqml", stm.data())
             //webview_chn.registerObject("Pipeline", stm.scope().data("pipeline"))
-            webview.url = "file:/html/grid.html"
+            webview.url = "file:/nwlan_ui/html/grid.html"
         }
     }
     onContextMenuRequested: { //disable context menu

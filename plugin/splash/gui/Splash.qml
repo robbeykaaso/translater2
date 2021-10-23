@@ -17,7 +17,7 @@ Window {
 
     Image {
         id: splashImage
-        source: "file:gui/assets/splash.png"
+        source: "file:nwlan_ui/gui/assets/splash.png"
         Text{
             x: parent.width - width - 20
             y: 240

@@ -14,7 +14,7 @@ if (${USEHANDLER} STREQUAL "ON")
         "plugin/handler/operatorGraphHandler.cpp"
         "plugin/handler/htmlHandler.cpp"
         "plugin/handler/resourceHandler.cpp"
-        "plugin/handler/menuHandler.cpp"
-        "plugin/handler/statusHandler.cpp"
+        "plugin/handler/guiHandler.cpp"
+        "plugin/handler/dpstOptGph.cpp"
         )
 endif()

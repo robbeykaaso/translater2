@@ -1,5 +1,6 @@
 #include "rea.h"
 #include <QSettings>
+#include <QQmlApplicationEngine>
 
 class recoverUserState{
 public:
@@ -55,4 +56,8 @@ private:
     bool m_recovering = false;
 };
 
-static recoverUserState recv_stat;
+static rea2::regPip<QQmlApplicationEngine*> reg_recv_stat([](rea2::stream<QQmlApplicationEngine*>* aInput){
+    if (aInput->scope()->data<bool>("status"))
+        static recoverUserState recv_stat;
+    aInput->out();
+}, QJsonObject(), "initRea");

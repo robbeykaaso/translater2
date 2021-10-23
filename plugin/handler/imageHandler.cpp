@@ -61,6 +61,6 @@ static rea2::regPip<QString> clearSelects([](rea2::stream<QString>* aInput){
 }, rea2::Json("after", "openWorkFile"));
 
 static rea2::regPip<QQmlApplicationEngine*> load_dialog([](rea2::stream<QQmlApplicationEngine*>* aInput){
-    aInput->data()->load("file:gui/service/image/dialog/ImageShow.qml");
+    aInput->data()->load("file:nwlan_ui/gui/service/image/dialog/ImageShow.qml");
     aInput->out();
 },  rea2::Json("before", "loadMain"));

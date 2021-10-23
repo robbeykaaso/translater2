@@ -4,7 +4,7 @@ if (${USEQML} STREQUAL "ON")
         "${CMAKE_SOURCE_DIR}/plugin/qml/gui"
         )
     list(APPEND gui_target
-        "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/../qml"
-        "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/../gui"
+        "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/../nwlan_ui/qml"
+        "${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/../nwlan_ui/gui"
         )
 endif()

@@ -5,6 +5,7 @@ Rectangle{
     id: root
     property string name
     property int index
+    property bool fixed
     property var hidden_service: []
 
     property alias mode: md.currentText
@@ -57,7 +58,7 @@ Rectangle{
 
     Button{
         id: del
-        visible: layout_mode
+        visible: layout_mode && !fixed
         width: 20
         height: 20
         text: "-"
@@ -72,7 +73,7 @@ Rectangle{
         }
     }
     Button{
-        visible: layout_mode
+        visible: layout_mode && !fixed
         width: 20
         height: 20
         text: "+"
@@ -203,7 +204,6 @@ Rectangle{
                     tgt.height = Qt.binding(function(){return root.height})
                     items[tp] = tgt
                 }
-
                 md.iniModel.push(tp)
                 md.model = md.iniModel
             }, {name: name + "_handle_created"})

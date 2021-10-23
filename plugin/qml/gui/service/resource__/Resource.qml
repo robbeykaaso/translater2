@@ -32,5 +32,5 @@ Web{
         }
     }
 
-    url0: "file:/html/fstree.html"
+    url0: "file:/nwlan_ui/html/fstree.html"
 }

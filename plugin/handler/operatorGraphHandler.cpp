@@ -53,6 +53,15 @@ private:
             graph->run();
         }, rea2::Json("name", "runOperatorGraph"));
 
+        rea2::pipeline::instance()->add<QJsonObject>([this](rea2::stream<QJsonObject>* aInput){
+            auto scp = aInput->scope();
+            auto cfg = scp->data<QJsonObject>("config");
+            auto rt = scp->data<QString>("root");
+            auto pth = scp->data<QString>("path");
+            auto id = handler::calcID(pth, rt, cfg);
+            aInput->setData(m_data.value(id).value("operators").toObject())->out();
+        }, rea2::Json("name", "getOperatorGraph"));
+
         rea2::pipeline::instance()->add<QString>([this](rea2::stream<QString>* aInput){
             auto opt = aInput->data();
             auto prgs = aInput->scope()->data<double>("progress");

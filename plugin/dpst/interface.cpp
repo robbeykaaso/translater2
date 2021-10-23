@@ -46,12 +46,14 @@ searchServerAspect::~searchServerAspect(){
 
 static rea2::regPip<QQmlApplicationEngine*> reg_tcp_linker([](rea2::stream<QQmlApplicationEngine*>* aInput){
     std::cout << "init ssdp" << std::endl;
-    static searchServerAspect search_server(aInput->scope()->data<rea2::normalClient*>("client"));
+    auto clt = aInput->scope()->data<rea2::normalClient*>("client");
+    if (clt)
+        static searchServerAspect search_server(clt);
     aInput->out();
 }, QJsonObject(), "install0_tcp");
 
 static rea2::regPip<QQmlApplicationEngine*> load_dialog([](rea2::stream<QQmlApplicationEngine*>* aInput){
-    aInput->data()->load("file:gui/service/dpst_train/dialog/ViewMap.qml");
-    aInput->data()->load("file:gui/service/dpst_train/dialog/VisibleSet.qml");
+    aInput->data()->load("file:nwlan_ui/gui/service/dpst_train/dialog/ViewMap.qml");
+    aInput->data()->load("file:nwlan_ui/gui/service/dpst_train/dialog/VisibleSet.qml");
     aInput->out();
 },  rea2::Json("before", "loadMain"));

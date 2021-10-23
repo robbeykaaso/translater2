@@ -28,5 +28,7 @@
         <file>gui/ReaGrid.qml</file>
         <file>gui/service/menu__/mainMenu.qml</file>
         <file>gui/service/status__/mainStatus.qml</file>
+        <file>gui/service/titlebar__/titleBar.qml</file>
+        <file>gui/service/dpst_optgph__/dpstOptgph.qml</file>
     </qresource>
 </RCC>

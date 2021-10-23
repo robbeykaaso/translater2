@@ -33,6 +33,7 @@ Item{
     property bool layout_mode: true
     property bool model_mode: true
     property var hidden_service: []
+    property var fixed_ide: []
 
     function nomalizedModel(){
         var act_mdl = []
@@ -50,7 +51,9 @@ Item{
                 layout_mode: layout_mode,
                 model_mode: model_mode,
                 ide_type: act_ide_type,
-                ide_status: act_ide_status}
+                ide_status: act_ide_status,
+                hidden_service: hidden_service,
+                fixed_ide: fixed_ide}
     }
 
     Component.onCompleted: {
@@ -81,6 +84,8 @@ Item{
                     model_mode = cfg["model_mode"]
                 if (cfg["hidden_service"] !== undefined)
                     hidden_service = cfg["hidden_service"]
+                if (cfg["fixed_ide"] !== undefined)
+                    fixed_ide = cfg["fixed_ide"]
                 if (cfg["ide_type"] !== undefined)
                     ide_type = cfg["ide_type"]
                 if (cfg["ide_status"] !== undefined)

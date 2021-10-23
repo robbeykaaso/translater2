@@ -5,7 +5,6 @@ ApplicationWindow {
     id: main_window
     width: 800
     height: 600
-    visible: true
 
     GridsModel{
         id: grids_model
@@ -25,8 +24,14 @@ ApplicationWindow {
                         Pipelines().run("enableLayout", "")
                     }
                 }
-
+                Action{
+                    shortcut: "Shift+B"
+                    onTriggered: {
+                        Pipelines().run("enableModel", "")
+                    }
+                }
                 com: GridItem{
+                        fixed: grids_model.fixed_ide.indexOf(index) >= 0
                         hidden_service: grids_model.hidden_service
                         layout_mode: grids_model.layout_mode
                         model_mode: grids_model.model_mode
@@ -75,6 +80,13 @@ ApplicationWindow {
                         }
                     }, {name: "js_saveWorkFile",
                         external: "c++"})
+
+                    Pipelines().add(function(aInput){
+                        main_window.visible = aInput.data()
+                        if (aInput.scope().data("noframe"))
+                            main_window.flags = Qt.Window | Qt.CustomizeWindowHint
+                        aInput.out()
+                    }, {name: "openNwlanWindow"})
                 }
             }
         }
